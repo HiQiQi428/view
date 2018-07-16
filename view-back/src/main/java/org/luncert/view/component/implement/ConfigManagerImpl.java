@@ -1,8 +1,10 @@
 package org.luncert.view.component.implement;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -10,22 +12,38 @@ import java.util.StringTokenizer;
 
 import org.luncert.view.component.ConfigManager;
 import org.luncert.view.util.IOHelper;
+import org.springframework.stereotype.Component;
 
 import net.sf.json.JSONObject;
 
+@Component
 public class ConfigManagerImpl implements ConfigManager {
 
-    // private Map<String, Properties> configs;
+    private String configPath;
 
     private JSONObject configs;
 
-    private void loadConfigFromContent(String content) {
-        configs = JSONObject.fromObject(content);
+    public ConfigManagerImpl() throws IOException {
+        File file = Paths.get(System.getProperty("user.dir"), "config.json").toFile();
+        if (!file.exists()) {
+            file.createNewFile();
+            configs = new JSONObject();
+        }
+        else {
+            configs = JSONObject.fromObject(IOHelper.read(file));
+        }
+        configPath = file.getAbsolutePath();
     }
 
-    public ConfigManagerImpl() throws IOException {
-        String content = IOHelper.read(ConfigManagerImpl.class.getClassLoader().getResourceAsStream("config.json"));
-        loadConfigFromContent(content);
+    // write the configuration back to the file
+    private void saveChanges() {
+        try {
+            PrintWriter pw = new PrintWriter(configPath);
+            pw.append(configs.toString()).flush();
+            pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
     }
 
 	@Override
@@ -39,11 +57,13 @@ public class ConfigManagerImpl implements ConfigManager {
             String name = tokenizer.nextToken();
             if (!tokenizer.hasMoreTokens()) {
                 tmp.put(name, value);
+                saveChanges();
                 return;
             }
             else {
-                if (tmp.getJSONObject(name) == null) tmp = tmp.getJSONObject(name);
+                if (tmp.has(name)) tmp = tmp.getJSONObject(name);
                 else {
+                    // 由于JSONObject不能存放空的JSONObject，所以只能倒着来
                     List<String> tokens = new ArrayList<>();
                     while (tokenizer.hasMoreTokens()) tokens.add(tokenizer.nextToken());
                     Object v = value;
@@ -53,6 +73,7 @@ public class ConfigManagerImpl implements ConfigManager {
                         v = jsonObj;
                     }
                     tmp.put(name, v);
+                    saveChanges();
                     return;
                 }
             }
@@ -100,17 +121,6 @@ public class ConfigManagerImpl implements ConfigManager {
                 return props;
             }
         }
-	}
-
-	@Override
-	public boolean loadConfig(File configFile) {
-        try {
-            loadConfigFromContent(IOHelper.read(new FileInputStream(configFile)));
-            return true;
-		} catch (IOException e) {
-            e.printStackTrace();
-            return false;
-		}
-	}
-
+    }
+    
 }

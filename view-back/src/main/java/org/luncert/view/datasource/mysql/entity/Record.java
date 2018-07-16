@@ -15,6 +15,6 @@ public class Record {
 
     Date timestamp;
 
-    String picPath;
+    String picName;
 
 }

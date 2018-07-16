@@ -1,6 +1,9 @@
 package org.luncert.view.service;
 
+import java.io.IOException;
 import java.util.Date;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageInfo;
 
@@ -34,6 +37,8 @@ public interface PigService {
     Result deleteById(String userId, Long id);
 
     Result addRecord(MultipartFile file, Long pigId, String description);
+
+    void readImage(String picName, HttpServletResponse response) throws IOException;
 
     /**
      * 获得猪的所有生长记录

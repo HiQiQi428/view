@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.luncert.view.component.ConfigManager;
+import org.luncert.view.component.Session;
 import org.luncert.view.service.UserService;
 import org.luncert.view.util.CipherHelper;
 import org.luncert.view.util.Request;
@@ -16,26 +17,6 @@ import net.sf.json.JSONObject;
 
 @Service
 public class UserServiceImpl implements UserService {
-
-    private class Session {
-        static final int TTL = 300000; // 5min
-        String userId;
-        String sessionKey; // 用于加密传输
-        Long lastAccess;
-        Session(String userId, String sessionKey) {
-            this.userId = userId;
-            this.sessionKey = sessionKey;
-            lastAccess = System.currentTimeMillis();
-        }
-        boolean beEmpired() {
-            long now = System.currentTimeMillis();
-            if (now > TTL + lastAccess) return true;
-            else {
-                lastAccess = now;
-                return false;
-            }
-        }
-    }
 
     // 进行sid到userId的映射
     Map<String, Session> mapper = new HashMap<>();
@@ -53,9 +34,11 @@ public class UserServiceImpl implements UserService {
             if (json.has("errcode")) return rep;
             else {
                 String userId = json.getString("openid");
-                String sessionKey = json.getString("session_key");
                 String sid = CipherHelper.getUUID(16);
-                mapper.put(sid, new Session(userId, sessionKey));
+                Session session = new Session();
+                session.setAttribute("userId", userId);
+                session.setAttribute("sessionKey", json.getString("session_key"));
+                mapper.put(sid, session);
                 return null;
             }
 		} catch (Exception e) {
@@ -68,11 +51,11 @@ public class UserServiceImpl implements UserService {
 	public String getUserId(String sid) {
         Session session = mapper.get(sid);
         if (session == null) return null;
-        else if (session.beEmpired()) {
+        else if (session.isEmpired()) {
             mapper.remove(sid);
             return null;
         }
-        else return session.userId;
+        else return session.getString("usedId");
     }
     
 }

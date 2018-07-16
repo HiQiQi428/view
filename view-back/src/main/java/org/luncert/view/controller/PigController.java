@@ -1,6 +1,9 @@
 package org.luncert.view.controller;
 
+import java.io.IOException;
 import java.text.ParseException;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageInfo;
 
@@ -108,6 +111,11 @@ public class PigController {
         @RequestParam Long pigId,
         @RequestParam String description) {
         return pigService.addRecord(multipartFile, pigId, description).toJSONString();
+    }
+
+    @GetMapping("record/readImage")
+    public void readImage(String picName, HttpServletResponse response) throws IOException {
+        pigService.readImage(picName, response);
     }
 
 	@GetMapping("record/fetchAllRecords")

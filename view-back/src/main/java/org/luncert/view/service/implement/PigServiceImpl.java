@@ -1,10 +1,19 @@
 package org.luncert.view.service.implement;
 
-import java.security.NoSuchAlgorithmException;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -22,6 +31,7 @@ import org.luncert.view.util.IOHelper;
 import org.luncert.view.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -41,18 +51,11 @@ public class PigServiceImpl implements PigService {
 
     Map<Integer, String> strains;
 
-    private void initStrains() {
-        if (strains == null) {
-            strains = new HashMap<>();
-            for (Strain item : strainMapper.fetchAll()) strains.put(item.getId(), item.getValue());
-        }
+    String imageStorePath;
 
-    }
+    String imageFormat;
 
-    private boolean isValidStrainIdentifier(int strain) {
-        if (strains == null) initStrains();
-        return strains.containsKey(strain);
-    }
+    private boolean isValidStrainIdentifier(int strain) { return strains.containsKey(strain); }
 
     private Pig findById(String userId, Long pigId) {
         for (Pig pig : pigRepo.findById(userId, pigId)) {
@@ -61,11 +64,33 @@ public class PigServiceImpl implements PigService {
         return null;
     }
 
-    @Override
-    public Result getStrainMap() {
-        if (strains == null) initStrains();
-        return new Result(Result.OK, null, strains);
+    /**
+     * initialize
+     */
+    @PostConstruct
+    public void init() throws IOException {
+        // init strain map
+        strains = new HashMap<>();
+        for (Strain item : strainMapper.fetchAll()) strains.put(item.getId(), item.getValue());
+        // init image store path
+        imageStorePath = configManager.getProperty("image:storePath");
+        if (imageStorePath == null || imageStorePath.length() == 0) {
+            Path path = Paths.get(ResourceUtils.getFile("classpath:").getAbsolutePath(), "static", "images");
+            imageStorePath = path.toString();
+            configManager.setProperty("image:storePath", imageStorePath);
+        }
+        File storeDir = new File(imageStorePath);
+        if (!storeDir.exists()) storeDir.mkdirs();
+        // init image format
+        imageFormat = configManager.getProperty("image:format");
+        if (imageFormat == null || imageFormat.length() == 0) {
+            imageFormat = "jpeg";
+            configManager.setProperty("image:format", imageFormat);
+        }
     }
+
+    @Override
+    public Result getStrainMap() { return new Result(Result.OK, null, strains); }
 
 	@Override
 	public Result addPig(String userId, String name, boolean beMale, Date birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId) {
@@ -141,21 +166,26 @@ public class PigServiceImpl implements PigService {
             return new Result(Result.FIELD_IS_NULL);
         }
         
-        
         // save image
-        String fileName;
+        String picName = null;
 		try {
-			fileName = CipherHelper.hashcode(pigId + new Date().toString());
-            IOHelper.saveImage(file, fileName, configManager.getProperty("imageStoreDir"));
-		} catch (NoSuchAlgorithmException e1) {
-            return new Result(Result.EXCEPTOIN_OCCUR, e1.toString());
-        } catch (Exception e2) {
-            return new Result(Result.FAILED_TO_SAVE_IMAGE, e2.toString());
-        }
+            picName = CipherHelper.hashcode(pigId + new Date().toString());
+            // 转换图片格式
+            BufferedImage source = ImageIO.read(file.getInputStream());
+            BufferedImage target = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
+            target.createGraphics().drawImage(source, 0, 0, Color.WHITE, null);
+            // 以jpeg图片格式写入磁盘
+            ImageIO.write(target, imageFormat, new File(imageStorePath, picName));
+        } catch (Exception e) { return new Result(Result.FAILED_TO_SAVE_IMAGE, null, e); }
 
         // insert into mysql
-        recordMapper.addRecord(pigId, description, new Date(), "static/images" + fileName);
+        recordMapper.addRecord(pigId, description, new Date(), picName);
         return new Result(Result.OK);
+    }
+
+	@Override
+	public void readImage(String picName, HttpServletResponse response) throws IOException {
+        IOHelper.writeResponse("image/" + imageFormat, IOHelper.read(new File(imageStorePath, picName)), response);
 	}
 
     @Override

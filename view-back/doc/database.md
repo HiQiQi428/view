@@ -19,7 +19,7 @@ id | int | 记录id
 pigId | long | 猪id
 description | String | 描述
 timestamp | date | 记录时间
-picPath | String | 照片位置
+picName | char(32) | 图片ID
 #### Strain
 name | type | description
 - | :-: | -:

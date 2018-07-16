@@ -1,0 +1,1 @@
+{"userService":{"wx-api":"https://api.weixin.qq.com/sns/jscode2session?appid=wxe8d14f9c2d271c61&secret=aa4742547f374697e6e9663088fafb0d&grant_type=authorization_code&js_code={0}"},"neo4j":{"host":"bolt://worker2","username":"neo4j","password":"MobileAI403"},"image":{"storePath":"/home/luncert/Project/view/view-back/target/classes/static/images", "format": "jpeg"}}

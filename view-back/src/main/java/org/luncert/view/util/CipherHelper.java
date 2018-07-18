@@ -7,13 +7,19 @@ import java.util.UUID;
 
 public class CipherHelper {
 
-    public static String hashcode(String raw) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        byte[] input = raw.getBytes();
-        md.update(input);
-        byte[] md5Bytes = md.digest();
-        BigInteger bigInteger = new BigInteger(1, md5Bytes);
-        return bigInteger.toString(16);
+    public static String hashcode(String raw) {
+        MessageDigest md;
+		try {
+			md = MessageDigest.getInstance("MD5");
+            byte[] input = raw.getBytes();
+            md.update(input);
+            byte[] md5Bytes = md.digest();
+            BigInteger bigInteger = new BigInteger(1, md5Bytes);
+            return bigInteger.toString(16);
+		} catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+		}
     }
 
     public static String getUUID(int n) {

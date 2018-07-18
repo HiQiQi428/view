@@ -18,7 +18,7 @@ name | type | description
 id | int | 记录id
 pigId | long | 猪id
 description | String | 描述
-timestamp | date | 记录时间
+timestamp | String | 记录时间
 picName | char(32) | 图片ID
 #### Strain
 name | type | description

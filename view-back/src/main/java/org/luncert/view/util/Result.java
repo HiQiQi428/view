@@ -31,11 +31,8 @@ public class Result {
     // exception occured
     public static final int EXCEPTOIN_OCCUR = 5;
 
-    // failed to save image
-    public static final int FAILED_TO_SAVE_IMAGE = 6;
-
     // found nothing
-    public static final int FOUND_NOTHING = 7;
+    public static final int FOUND_NOTHING = 6;
 
     public Result(int statusCode) { this(statusCode, null, null); }
 

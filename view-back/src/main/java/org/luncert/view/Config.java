@@ -19,6 +19,7 @@ import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.transaction.Neo4jTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @MapperScan("org.luncert.view.datasource.mysql")
@@ -34,6 +35,11 @@ public class Config implements WebMvcConfigurer {
     @Bean(name = "configManager")
     public ConfigManager getConfigManager() throws IOException {
         return new ConfigManagerImpl();
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
     }
 
     // neo4j

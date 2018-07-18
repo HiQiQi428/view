@@ -10,12 +10,10 @@ import com.github.pagehelper.PageInfo;
 import org.luncert.view.datasource.mysql.entity.Record;
 import org.luncert.view.service.PigService;
 import org.luncert.view.service.UserService;
-import org.luncert.view.util.DateHelper;
 import org.luncert.view.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +28,12 @@ public class PigController {
 
     @Autowired
     PigService pigService;
+
+    @GetMapping("addStrain")
+    public String addStrain(String sid, String value) {
+        if (userService.beValidSid(sid)) return pigService.addStrain(value).toJSONString();
+        else return new Result(Result.INVALID_SID).toJSONString();
+    }
 
     @GetMapping("getStrainMap")
     public String getStrainMap() {
@@ -50,12 +54,35 @@ public class PigController {
         @RequestParam String eatingHabits,
         @RequestParam String appetite,
         @RequestParam Long fatherId,
-        @RequestParam Long motherId) throws ParseException {
+        @RequestParam Long motherId,
+        @RequestParam(name = "image") MultipartFile file) throws ParseException {
 
         Result result;
         String userId = userService.getUserId(sid);
         if (userId != null) {
-            result = pigService.addPig(userId, name, beMale, DateHelper.parse(birthdate), strain, health, eatingHabits, appetite, fatherId, motherId);
+            result = pigService.addPig(userId, name, beMale, birthdate, strain, health, eatingHabits, appetite, fatherId, motherId, file);
+        }
+        else result = new Result(Result.INVALID_SID);
+        return result.toJSONString();
+    }
+
+    @GetMapping("updatePig")
+    public String updatePig(@RequestParam String sid,
+        @RequestParam Long pigId,
+        @RequestParam String name,
+        @RequestParam boolean beMale,
+        @RequestParam String birthdate,
+        @RequestParam int strain,
+        @RequestParam String health,
+        @RequestParam String eatingHabits,
+        @RequestParam String appetite,
+        @RequestParam Long fatherId,
+        @RequestParam Long motherId) {
+
+        Result result;
+        String userId = userService.getUserId(sid);
+        if (userId != null) {
+            result = pigService.updatePig(userId, pigId, name, beMale, birthdate, strain, health, eatingHabits, appetite, fatherId, motherId);
         }
         else result = new Result(Result.INVALID_SID);
         return result.toJSONString();
@@ -106,11 +133,14 @@ public class PigController {
         return result.toJSONString();
     }
 
-    @PutMapping("record/addRecord")
+    @PostMapping("record/addRecord")
     public String addRecord(@RequestParam("image") MultipartFile multipartFile,
+        @RequestParam String sid,
         @RequestParam Long pigId,
         @RequestParam String description) {
-        return pigService.addRecord(multipartFile, pigId, description).toJSONString();
+
+        if (userService.beValidSid(sid)) return pigService.addRecord(multipartFile, pigId, description).toJSONString();
+        else return new Result(Result.INVALID_SID).toJSONString();
     }
 
     @GetMapping("record/readImage")
@@ -120,26 +150,32 @@ public class PigController {
 
 	@GetMapping("record/fetchAllRecords")
 	public PageInfo<Record> fetchAllRecords(
+		@RequestParam String sid,
 		@RequestParam int pageSize,
 		@RequestParam int pageNum,
 		@RequestParam Long pigId) {
-        return pigService.fetchAllRecords(pageSize, pageNum, pigId);
+        if (userService.beValidSid(sid)) return pigService.fetchAllRecords(pageSize, pageNum, pigId);
+        else return null;
     }
     
 	@GetMapping("record/fetchLastWeekRecords")
     public PageInfo<Record> fetchLastWeekRecords(
+		@RequestParam String sid,
 		@RequestParam int pageSize,
 		@RequestParam int pageNum,
 		@RequestParam Long pigId) {
-        return pigService.fetchLastWeekRecords(pageSize, pageNum, pigId);
+        if (userService.beValidSid(sid)) return pigService.fetchLastWeekRecords(pageSize, pageNum, pigId);
+        else return null;
     }
     
 	@GetMapping("record/fetchLast3WeekRecords")
     public PageInfo<Record> fetchLast3WeekRecords(
+		@RequestParam String sid,
 		@RequestParam int pageSize,
 		@RequestParam int pageNum,
 		@RequestParam Long pigId) {
-        return pigService.fetchLast3WeekRecords(pageSize, pageNum, pigId);
+        if (userService.beValidSid(sid)) return pigService.fetchLast3WeekRecords(pageSize, pageNum, pigId);
+        else return null;
     }
 
 }

@@ -14,4 +14,6 @@ public interface UserService {
      */
     String getUserId(String sid);
 
+    boolean beValidSid(String sid);
+
 }

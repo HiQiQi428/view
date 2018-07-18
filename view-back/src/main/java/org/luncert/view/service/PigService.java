@@ -1,7 +1,6 @@
 package org.luncert.view.service;
 
 import java.io.IOException;
-import java.util.Date;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -13,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface PigService {
 
+    Result addStrain(String value);
+
     /**
      * 获取品系id与品系描述的对照表
      */
@@ -21,7 +22,9 @@ public interface PigService {
     /**
      * 登记新猪
      */
-    Result addPig(String userId, String name, boolean beMale, Date birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId);
+    Result addPig(String userId, String name, boolean beMale, String birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId, MultipartFile file);
+    
+    Result updatePig(String userId, Long pigId, String name, boolean beMale, String birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId);
 
     Result fetchAllPigs(String userId);
 

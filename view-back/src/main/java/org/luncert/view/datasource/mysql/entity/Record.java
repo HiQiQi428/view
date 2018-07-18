@@ -1,7 +1,5 @@
 package org.luncert.view.datasource.mysql.entity;
 
-import java.util.Date;
-
 import lombok.Data;
 
 @Data
@@ -13,7 +11,7 @@ public class Record {
 
     String description;
 
-    Date timestamp;
+    String timestamp;
 
     String picName;
 

@@ -1,9 +1,7 @@
 package org.luncert.view.datasource.neo4j.entity;
 
-import java.util.Date;
 import java.util.List;
 
-import org.luncert.view.util.DateHelper;
 import org.neo4j.ogm.annotation.GeneratedValue;
 import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
@@ -46,7 +44,10 @@ public class Pig {
     // 食量
     @Property(name = "appetite")
     String appetite;
-    
+
+    @Property(name = "picName")
+    String picName;
+
     @Relationship(type="beChildOfFather", direction = Relationship.OUTGOING)
     Pig father;
 
@@ -71,8 +72,8 @@ public class Pig {
         return this;
     }
 
-    public Pig birthdate(Date birthdate) {
-        this.birthdate = DateHelper.format(birthdate);
+    public Pig birthdate(String birthdate) {
+        this.birthdate = birthdate;
         return this;
     }
 
@@ -93,6 +94,11 @@ public class Pig {
 
     public Pig appetite(String appetite) {
         this.appetite = appetite;
+        return this;
+    }
+
+    public Pig picName(String picName) {
+        this.picName = picName;
         return this;
     }
 

@@ -210,13 +210,21 @@ public class PigServiceImpl implements PigService {
         } else return new Result(Result.INVALID_STRAIN_IDENTIFIER);
     }
 
+    private void deleteImage(String picName) {
+        File file = new File(imageStorePath, picName);
+        if (file.exists()) file.delete();
+    }
+
     @Override
     public Result deleteById(String userId, Long pigId) {
         Pig pig = findById(userId, pigId);
         if (pig != null) {
-            // 删除neo4j中的数据
+            // 删除neo4j中的数据与图片
+            deleteImage(pig.getPicName());
             pigRepo.delete(pig);
-            // 删除mysql中的数据
+            // 删除mysql中的数据与图片
+            List<Record> records = recordMapper.fetchAll(pigId);
+            for (Record record : records) deleteImage(record.getPicName());
             recordMapper.deleteById(pigId);
             return new Result(Result.OK);
         } else return new Result(Result.PIG_NOT_FOUND);

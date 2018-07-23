@@ -1,21 +1,16 @@
 package org.luncert.view.service.implement;
 
-import java.net.URL;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.luncert.mullog.Mullog;
 import org.luncert.mullog.annotation.BindAppender;
-import org.luncert.view.component.ConfigManager;
+import org.luncert.simpleutils.CipherHelper;
+import org.luncert.springconfigurer.ConfigManager;
 import org.luncert.view.component.Session;
 import org.luncert.view.service.UserService;
-import org.luncert.view.util.CipherHelper;
-import org.luncert.view.util.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import net.sf.json.JSONObject;
 
 @Service
 @BindAppender(name = "UserService")

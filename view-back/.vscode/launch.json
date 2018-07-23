@@ -9,7 +9,7 @@
             "name": "Debug (Launch)-Application<view>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
+            "console": "externalTerminal",
             "stopOnEntry": false,
             "mainClass": "org.luncert.view.Application",
             "projectName": "view",

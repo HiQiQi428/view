@@ -24,8 +24,8 @@ public class TestPigRepository {
 
     // @Test
     public void testSave() {
-        Pig pig = new Pig().name("pigy").userId("lun").birthdate(new Date().toString()).strain(1).health("good");
-        repo.save(pig);
+        Pig.Builder builder = new Pig.Builder().name("pigy").userId("lun").birthdate(new Date().toString()).strain(1).health("good");
+        repo.save(builder.build());
     }
 
     @Test

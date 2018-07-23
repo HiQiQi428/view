@@ -1,9 +1,6 @@
 package org.luncert.view.controller;
 
-import java.io.IOException;
 import java.text.ParseException;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageInfo;
 
@@ -66,7 +63,7 @@ public class PigController {
         return result.toJSONString();
     }
 
-    @GetMapping("updatePig")
+    @PostMapping("updatePig")
     public String updatePig(@RequestParam String sid,
         @RequestParam Long pigId,
         @RequestParam String name,
@@ -106,24 +103,6 @@ public class PigController {
         return result.toJSONString();
     }
 
-    @GetMapping("queryByName")
-    public String queryByName(@RequestParam String sid, @RequestParam String name) {
-        Result result;
-        String userId = userService.getUserId(sid);
-        if (userId != null) result = pigService.queryByName(userId, name);
-        else result = new Result(Result.INVALID_SID);
-        return result.toJSONString();
-    }
-
-    @GetMapping("queryByStrain")
-    public String queryByStrain(@RequestParam String sid, @RequestParam int strain) {
-        Result result;
-        String userId = userService.getUserId(sid);
-        if (userId != null) result = pigService.queryByStrain(userId, strain);
-        else result = new Result(Result.INVALID_SID);
-        return result.toJSONString();
-    }
-
     @GetMapping("deleteById")
     public String deleteById(@RequestParam String sid, @RequestParam Long pigId) {
         Result result;
@@ -141,11 +120,6 @@ public class PigController {
 
         if (userService.beValidSid(sid)) return pigService.addRecord(multipartFile, pigId, description).toJSONString();
         else return new Result(Result.INVALID_SID).toJSONString();
-    }
-
-    @GetMapping("record/readImage")
-    public void readImage(String picName, HttpServletResponse response) throws IOException {
-        pigService.readImage(picName, response);
     }
 
 	@GetMapping("record/fetchAllRecords")

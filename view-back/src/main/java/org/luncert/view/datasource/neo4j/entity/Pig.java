@@ -1,5 +1,6 @@
 package org.luncert.view.datasource.neo4j.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.neo4j.ogm.annotation.GeneratedValue;
@@ -9,6 +10,7 @@ import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
 
 import lombok.Data;
+import net.sf.json.JSONArray;
 
 @Data
 @NodeEntity
@@ -57,59 +59,113 @@ public class Pig {
     @Relationship(type="beParentOf", direction = Relationship.OUTGOING)
     transient List<Pig> children;
 
-    public Pig name(String name) {
-        this.name = name;
-        return this;
+    public Pig() {
+        children = new ArrayList<>();
     }
 
-    public Pig userId(String userId) {
-        this.userId = userId;
-        return this;
+    public void addChild(Pig child) {
+        children.add(child);
     }
 
-    public Pig beMale(boolean beMale) {
-        this.beMale = beMale;
-        return this;
+    public static class Builder {
+
+        private Pig pig;
+        
+        public Builder() {
+            pig = new Pig();
+        }
+
+        public Builder name(String name) {
+            pig.name = name;
+            return this;
+        }
+
+        public Builder userId(String userId) {
+            pig.userId = userId;
+            return this;
+        }
+
+        public Builder beMale(boolean beMale) {
+            pig.beMale = beMale;
+            return this;
+        }
+
+        public Builder birthdate(String birthdate) {
+            pig.birthdate = birthdate;
+            return this;
+        }
+
+        public Builder strain(int strain) {
+            pig.strain = strain;
+            return this;
+        }
+
+        public Builder health(String health) {
+            pig.health = health;
+            return this;
+        }
+
+        public Builder eatingHabits(String eatingHabits) {
+            pig.eatingHabits = eatingHabits;
+            return this;
+        }
+
+        public Builder appetite(String appetite) {
+            pig.appetite = appetite;
+            return this;
+        }
+
+        public Builder picName(String picName) {
+            pig.picName = picName;
+            return this;
+        }
+
+        public Builder father(Pig father) {
+            pig.father = father;
+            return this;
+        }
+
+        public Builder mother(Pig mother) {
+            pig.mother = mother;
+            return this;
+        }
+
+        public Pig build() {
+            return pig;
+        }
     }
 
-    public Pig birthdate(String birthdate) {
-        this.birthdate = birthdate;
-        return this;
+    /**
+     * to JSON string
+     * 使用JSONObject的fromObject方法会造成无穷递归，必须自己实现序列化以控制深度
+     */
+    @Override
+    public String toString() {
+        return toString(true);
     }
 
-    public Pig strain(int strain) {
-        this.strain = strain;
-        return this;
-    }
-
-    public Pig health(String health) {
-        this.health = health;
-        return this;
-    }
-
-    public Pig eatingHabits(String eatingHabits) {
-        this.eatingHabits = eatingHabits;
-        return this;
-    }
-
-    public Pig appetite(String appetite) {
-        this.appetite = appetite;
-        return this;
-    }
-
-    public Pig picName(String picName) {
-        this.picName = picName;
-        return this;
-    }
-
-    public Pig father(Pig father) {
-        this.father = father;
-        return this;
-    }
-
-    public Pig mother(Pig mother) {
-        this.mother = mother;
-        return this;
+    public String toString(boolean all) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{").append("\"id\":").append(id)
+            .append(",\"name\":").append('"').append(name).append('"')
+            .append(",\"userId\":").append('"').append(userId).append('"')
+            .append(",\"beMale\":").append(beMale)
+            .append(",\"birthdate\":").append('"').append(birthdate).append('"')
+            .append(",\"strain\":").append(strain)
+            .append(",\"health\":").append('"').append(health).append('"')
+            .append(",\"eatingHabits\":").append('"').append(eatingHabits).append('"')
+            .append(",\"appetite\":").append('"').append(appetite).append('"')
+            .append(",\"picName\":").append('"').append(picName).append('"');
+        if (all) {
+            JSONArray jsonArray = new JSONArray();
+            for (Pig child : children) {
+                jsonArray.add(child.toString());
+            }
+            if (father != null) builder.append(",\"father\":").append(father.toString(false));
+            if (mother != null) builder.append(",\"mother\":").append(mother.toString(false));
+            builder.append(",\"children\":").append(jsonArray.toString());
+        }
+        return builder.append("}").toString();
     }
 
 }

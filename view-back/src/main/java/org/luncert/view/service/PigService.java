@@ -1,9 +1,5 @@
 package org.luncert.view.service;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletResponse;
-
 import com.github.pagehelper.PageInfo;
 
 import org.luncert.view.datasource.mysql.entity.Record;
@@ -30,8 +26,10 @@ public interface PigService {
 
     Result queryById(String userId, Long pigId);
 
+    @Deprecated
     Result queryByName(String userId, String name);
 
+    @Deprecated
     Result queryByStrain(String userId, int strain);
 
     /**
@@ -40,8 +38,6 @@ public interface PigService {
     Result deleteById(String userId, Long id);
 
     Result addRecord(MultipartFile file, Long pigId, String description);
-
-    void readImage(String picName, HttpServletResponse response) throws IOException;
 
     /**
      * 获得猪的所有生长记录

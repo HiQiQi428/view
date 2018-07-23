@@ -1,27 +1,23 @@
 package org.luncert.view.service.implement;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
 import org.luncert.mullog.Mullog;
 import org.luncert.mullog.annotation.BindAppender;
-import org.luncert.view.component.ConfigManager;
+import org.luncert.simpleutils.DateHelper;
+import org.luncert.simpleutils.IOHelper;
+import org.luncert.springconfigurer.ConfigManager;
 import org.luncert.view.datasource.mysql.RecordMapper;
 import org.luncert.view.datasource.mysql.StrainMapper;
 import org.luncert.view.datasource.mysql.entity.Record;
@@ -29,9 +25,6 @@ import org.luncert.view.datasource.mysql.entity.Strain;
 import org.luncert.view.datasource.neo4j.PigRepository;
 import org.luncert.view.datasource.neo4j.entity.Pig;
 import org.luncert.view.service.PigService;
-import org.luncert.view.util.CipherHelper;
-import org.luncert.view.util.DateHelper;
-import org.luncert.view.util.IOHelper;
 import org.luncert.view.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,6 +64,15 @@ public class PigServiceImpl implements PigService {
         return null;
     }
 
+    private void updateStrainMap() {
+        for (Strain item : strainMapper.fetchAll()) strains.put(item.getId(), item.getValue());
+    }
+
+    private void deleteImage(String picName) {
+        File file = new File(imageStorePath, picName);
+        if (file.exists()) file.delete();
+    }
+
     /**
      * initialize
      */
@@ -79,24 +81,20 @@ public class PigServiceImpl implements PigService {
         strains = new HashMap<>();
         updateStrainMap();
         // init image store path
-        imageStorePath = configManager.getProperty("image:storePath");
+        imageStorePath = configManager.getString("image:storePath");
         if (imageStorePath == null || imageStorePath.length() == 0) {
             Path path = Paths.get(ResourceUtils.getFile("classpath:").getAbsolutePath(), "static", "images");
             imageStorePath = path.toString();
-            configManager.setProperty("image:storePath", imageStorePath);
+            configManager.setAttribute("image:storePath", imageStorePath);
         }
         File storeDir = new File(imageStorePath);
         if (!storeDir.exists()) storeDir.mkdirs();
         // init image format
-        imageFormat = configManager.getProperty("image:format");
+        imageFormat = configManager.getString("image:format");
         if (imageFormat == null || imageFormat.length() == 0) {
             imageFormat = "jpeg";
-            configManager.setProperty("image:format", imageFormat);
+            configManager.setAttribute("image:format", imageFormat);
         }
-    }
-
-    private void updateStrainMap() {
-        for (Strain item : strainMapper.fetchAll()) strains.put(item.getId(), item.getValue());
     }
 
     @Override
@@ -112,38 +110,49 @@ public class PigServiceImpl implements PigService {
 	@Override
 	public Result addPig(String userId, String name, boolean beMale, String birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId, MultipartFile file) {
         if (!isValidStrainIdentifier(strain)) return new Result(Result.INVALID_STRAIN_IDENTIFIER);
+
         Pig father = null, mother = null;
-        if (fatherId >= 0) {
+        if (fatherId != null) {
             father = findById(userId, fatherId);
             if (father == null) return new Result(Result.PIG_NOT_FOUND, "connot found pig's father with ID = " + fatherId);
         }
-        if (motherId >= 0) {
+        if (motherId != null) {
             mother = findById(userId, motherId);
             if (mother == null) return new Result(Result.PIG_NOT_FOUND, "connot found pig's mother with ID = " + motherId);
         }
 
         String picName;
 		try {
-			picName = saveImage(file);
-		} catch (Exception e) {
+            picName = IOHelper.saveImage(file.getInputStream(), imageFormat, imageStorePath);
+        }
+        catch (Exception e) {
             e.printStackTrace();
-            return new Result(Result.EXCEPTOIN_OCCUR, null, e);
-		}
+            return new Result(Result.EXCEPTOIN_OCCUR, "failed to save image", e);
+        }
+        
+        Pig.Builder pigBuilder = new Pig.Builder()
+                                    .name(name)
+                                    .beMale(beMale)
+                                    .userId(userId)
+                                    .birthdate(birthdate)
+                                    .strain(strain)
+                                    .health(health)
+                                    .eatingHabits(eatingHabits)
+                                    .appetite(appetite)
+                                    .picName(picName);
 
-        Pig pig = new Pig()
-                .name(name)
-                .beMale(beMale)
-                .userId(userId)
-                .birthdate(birthdate)
-                .strain(strain)
-                .health(health)
-                .eatingHabits(eatingHabits)
-                .appetite(appetite)
-                .picName(picName)
-                .father(father)
-                .mother(mother);
+        Pig pig = pigBuilder.build();
+        if (father != null) {
+            pig.setFather(father);
+            father.addChild(pig);
+        }
+        if (mother != null) {
+            pig.setMother(mother);
+            mother.addChild(pig);
+        }
+
         pigRepo.save(pig);
-		return new Result(Result.OK, null, pig);
+		return new Result(Result.OK, null, pig.toString());
     }
     
     @Override
@@ -152,29 +161,40 @@ public class PigServiceImpl implements PigService {
         if (pig != null) {
             // modify strain
             if (!isValidStrainIdentifier(strain)) return new Result(Result.INVALID_STRAIN_IDENTIFIER);
-            else pig.strain(strain);
+            else pig.setStrain(strain);
 
             // modify father
-            if (fatherId >= 0) {
+            if (fatherId != null) {
                 Pig father = findById(userId, fatherId);
                 if (father == null) return new Result(Result.PIG_NOT_FOUND, "connot found pig's father with ID = " + fatherId);
-                else pig.father(father);
+                else {
+                    pig.setFather(father);
+                    father.addChild(pig);
+                }
             }
 
             // modify mother
-            if (motherId >= 0) {
+            if (motherId != null) {
                 Pig mother = findById(userId, motherId);
                 if (mother == null) return new Result(Result.PIG_NOT_FOUND, "connot found pig's mother with ID = " + motherId);
-                else pig.mother(mother);
+                else {
+                    pig.setMother(mother);
+                    mother.addChild(pig);
+                }
             }
 
             // others
-            pig.name(name).beMale(beMale).birthdate(birthdate).health(health).eatingHabits(eatingHabits).appetite(appetite);
+            pig.setName(name);
+            pig.setBeMale(beMale);
+            pig.setBirthdate(birthdate);
+            pig.setHealth(health);
+            pig.setEatingHabits(eatingHabits);
+            pig.setAppetite(appetite);
 
             // save
             pigRepo.save(pig);
 
-            return new Result(Result.OK, null, pig);
+            return new Result(Result.OK, null, pig.toString());
         }
         else return new Result(Result.PIG_NOT_FOUND);
     }
@@ -190,10 +210,11 @@ public class PigServiceImpl implements PigService {
     @Override
     public Result queryById(String userId, Long pigId) {
         Pig pig = findById(userId, pigId);
-        if (pig != null) return new Result(Result.OK, null, pig);
+        if (pig != null) return new Result(Result.OK, null, pig.toString());
         else return new Result(Result.PIG_NOT_FOUND, "there's no pig with ID = " + pigId);
     }
 
+    @Deprecated
     @Override
     public Result queryByName(String userId, String name) {
         List<Pig> data = pigRepo.findByName(userId, name);
@@ -201,6 +222,7 @@ public class PigServiceImpl implements PigService {
         else return new Result(Result.FOUND_NOTHING, "there's no pig with name = " + name);
     }
 
+    @Deprecated
     @Override
     public Result queryByStrain(String userId, int strain) {
         if (isValidStrainIdentifier(strain)) {
@@ -208,11 +230,6 @@ public class PigServiceImpl implements PigService {
             if (data != null) return new Result(Result.OK, null, data);
             else return new Result(Result.FOUND_NOTHING, "there's no pig with strain = " + strain);
         } else return new Result(Result.INVALID_STRAIN_IDENTIFIER);
-    }
-
-    private void deleteImage(String picName) {
-        File file = new File(imageStorePath, picName);
-        if (file.exists()) file.delete();
     }
 
     @Override
@@ -230,18 +247,6 @@ public class PigServiceImpl implements PigService {
         } else return new Result(Result.PIG_NOT_FOUND);
     }
 
-    private String saveImage(MultipartFile file) throws IOException, NoSuchAlgorithmException {
-        // save image
-        String picName = CipherHelper.hashcode(new Date().toString());
-        // 转换图片格式
-        BufferedImage source = ImageIO.read(file.getInputStream());
-        BufferedImage target = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
-        target.createGraphics().drawImage(source, 0, 0, Color.WHITE, null);
-        // 以jpeg图片格式写入磁盘
-        ImageIO.write(target, imageFormat, new File(imageStorePath, picName));
-        return picName;
-    }
-
 	@Override
 	public Result addRecord(MultipartFile file, Long pigId, String description) {
         if (file.isEmpty()
@@ -251,7 +256,9 @@ public class PigServiceImpl implements PigService {
         }
 
         String picName = null;
-        try { picName = saveImage(file); }
+        try {
+            picName = IOHelper.saveImage(file.getInputStream(), imageFormat, imageStorePath);
+        }
         catch (Exception e) {
             e.printStackTrace();
             return new Result(Result.EXCEPTOIN_OCCUR, null, e);
@@ -260,11 +267,6 @@ public class PigServiceImpl implements PigService {
         recordMapper.addRecord(pigId, description, DateHelper.now(), picName);
         return new Result(Result.OK);
     }
-
-	@Override
-	public void readImage(String picName, HttpServletResponse response) throws IOException {
-        IOHelper.writeResponse("image/" + imageFormat, IOHelper.read(new File(imageStorePath, picName)), response);
-	}
 
     @Override
     public PageInfo<Record> fetchAllRecords(int pageSize, int pageNum, Long pigId) {

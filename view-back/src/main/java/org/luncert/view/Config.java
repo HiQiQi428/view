@@ -7,12 +7,11 @@ import javax.servlet.MultipartConfigElement;
 
 import com.github.pagehelper.PageHelper;
 
-import org.luncert.view.component.ConfigManager;
-import org.luncert.view.component.implement.ConfigManagerImpl;
 import org.neo4j.ogm.session.SessionFactory;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.luncert.springconfigurer.ConfigManager;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
@@ -32,9 +31,9 @@ public class Config implements WebMvcConfigurer {
 
     // config manager
 
-    @Bean(name = "configManager")
-    public ConfigManager getConfigManager() throws IOException {
-        return new ConfigManagerImpl();
+    @Bean
+    public ConfigManager getConfigManager() throws Exception {
+        return new ConfigManager();
     }
 
     @Override
@@ -46,11 +45,11 @@ public class Config implements WebMvcConfigurer {
 
     @Bean
     public org.neo4j.ogm.config.Configuration configuration() throws Exception {
-        Properties config = getConfigManager().getProperties("neo4j");
+        ConfigManager configManager = getConfigManager();
         return new org.neo4j.ogm.config.Configuration
                     .Builder()
-                    .uri(config.getProperty("host"))
-                    .credentials(config.getProperty("username"), config.getProperty("password"))
+                    .uri(configManager.getString("neo4j:host"))
+                    .credentials(configManager.getString("neo4j:username"), configManager.getString("neo4j:password"))
                     .build();
     }
 

@@ -1,0 +1,7 @@
+view-back/target/
+view-back/.settings/
+view-back/.vscode/
+view-back/.classpath
+view-back/.factorypath
+view-back/.project
+scripts/images/

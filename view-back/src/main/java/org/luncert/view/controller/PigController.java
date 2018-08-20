@@ -2,12 +2,15 @@ package org.luncert.view.controller;
 
 import java.text.ParseException;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.github.pagehelper.PageInfo;
 
+import org.luncert.simpleutils.Result;
 import org.luncert.view.datasource.mysql.entity.Record;
 import org.luncert.view.service.PigService;
 import org.luncert.view.service.UserService;
-import org.luncert.view.util.Result;
+import org.luncert.view.util.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,13 +31,13 @@ public class PigController {
 
     @GetMapping("addStrain")
     public String addStrain(String sid, String value) {
-        if (userService.beValidSid(sid)) return pigService.addStrain(value).toJSONString();
-        else return new Result(Result.INVALID_SID).toJSONString();
+        if (userService.beValidSid(sid)) return pigService.addStrain(value).toString();
+        else return new Result(StatusCode.INVALID_SID).toString();
     }
 
     @GetMapping("getStrainMap")
     public String getStrainMap() {
-        return pigService.getStrainMap().toJSONString();
+        return pigService.getStrainMap().toString();
     }
 
     /**
@@ -59,8 +62,8 @@ public class PigController {
         if (userId != null) {
             result = pigService.addPig(userId, name, beMale, birthdate, strain, health, eatingHabits, appetite, fatherId, motherId, file);
         }
-        else result = new Result(Result.INVALID_SID);
-        return result.toJSONString();
+        else result = new Result(StatusCode.INVALID_SID);
+        return result.toString();
     }
 
     @PostMapping("updatePig")
@@ -81,8 +84,8 @@ public class PigController {
         if (userId != null) {
             result = pigService.updatePig(userId, pigId, name, beMale, birthdate, strain, health, eatingHabits, appetite, fatherId, motherId);
         }
-        else result = new Result(Result.INVALID_SID);
-        return result.toJSONString();
+        else result = new Result(StatusCode.INVALID_SID);
+        return result.toString();
     }
 
     @GetMapping("fetchAllPigs")
@@ -90,8 +93,8 @@ public class PigController {
         Result result;
         String userId = userService.getUserId(sid);
         if (userId != null) result = pigService.fetchAllPigs(userId);
-        else result = new Result(Result.INVALID_SID);
-        return result.toJSONString();
+        else result = new Result(StatusCode.INVALID_SID);
+        return result.toString();
     }
 
     @GetMapping("queryById")
@@ -99,8 +102,8 @@ public class PigController {
         Result result;
         String userId = userService.getUserId(sid);
         if (userId != null) result = pigService.queryById(userId, pigId);
-        else result = new Result(Result.INVALID_SID);
-        return result.toJSONString();
+        else result = new Result(StatusCode.INVALID_SID);
+        return result.toString();
     }
 
     @GetMapping("deleteById")
@@ -108,8 +111,8 @@ public class PigController {
         Result result;
         String userId = userService.getUserId(sid);
         if (userId != null) result = pigService.deleteById(userId, pigId);
-        else result = new Result(Result.INVALID_SID);
-        return result.toJSONString();
+        else result = new Result(StatusCode.INVALID_SID);
+        return result.toString();
     }
 
     @PostMapping("record/addRecord")
@@ -118,8 +121,8 @@ public class PigController {
         @RequestParam Long pigId,
         @RequestParam String description) {
 
-        if (userService.beValidSid(sid)) return pigService.addRecord(multipartFile, pigId, description).toJSONString();
-        else return new Result(Result.INVALID_SID).toJSONString();
+        if (userService.beValidSid(sid)) return pigService.addRecord(multipartFile, pigId, description).toString();
+        else return new Result(StatusCode.INVALID_SID).toString();
     }
 
 	@GetMapping("record/fetchAllRecords")
@@ -150,6 +153,16 @@ public class PigController {
 		@RequestParam Long pigId) {
         if (userService.beValidSid(sid)) return pigService.fetchLast3WeekRecords(pageSize, pageNum, pigId);
         else return null;
+    }
+
+    @GetMapping("loadImage")
+    public String loadImage(String sid, String picName, final HttpServletResponse response) {
+        if (userService.beValidSid(sid)) {
+            Result result = pigService.loadImage(picName, response);
+            if (result != null) return result.toString();
+            else return null;
+        }
+        else return new Result(StatusCode.INVALID_SID).toString();
     }
 
 }

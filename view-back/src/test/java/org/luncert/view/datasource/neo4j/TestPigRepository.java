@@ -6,7 +6,6 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.luncert.mullog.Mullog;
-import org.luncert.mullog.annotation.BindAppender;
 import org.luncert.view.datasource.neo4j.entity.Pig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,18 +13,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@BindAppender(name = "Test")
 public class TestPigRepository {
     
-    Mullog mullog = new Mullog(this);
+    Mullog mullog = new Mullog("Test");
 
     @Autowired
     PigRepository repo;
 
     // @Test
     public void testSave() {
-        Pig.Builder builder = new Pig.Builder().name("pigy").userId("lun").birthdate(new Date().toString()).strain(1).health("good");
-        repo.save(builder.build());
+        Pig pig = Pig.builder().name("pigy").userId("lun").birthdate(new Date().toString()).strain(1).status(Pig.Status.Healthy).build();
+        repo.save(pig);
     }
 
     @Test

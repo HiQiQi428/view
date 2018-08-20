@@ -1,9 +1,11 @@
 package org.luncert.view.service;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.github.pagehelper.PageInfo;
 
+import org.luncert.simpleutils.Result;
 import org.luncert.view.datasource.mysql.entity.Record;
-import org.luncert.view.util.Result;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface PigService {
@@ -54,4 +56,6 @@ public interface PigService {
      */
     PageInfo<Record> fetchLast3WeekRecords(int pageSize, int pageNum, Long pigId);
     
+    Result loadImage(String picName, HttpServletResponse response);
+
 }

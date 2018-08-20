@@ -1,48 +1,52 @@
 package org.luncert.view.service.implement;
 
+import java.net.URL;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.luncert.mullog.Mullog;
-import org.luncert.mullog.annotation.BindAppender;
 import org.luncert.simpleutils.CipherHelper;
-import org.luncert.springconfigurer.ConfigManager;
+import org.luncert.simpleutils.Http;
 import org.luncert.view.component.Session;
 import org.luncert.view.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import net.sf.json.JSONObject;
+
 @Service
-@BindAppender(name = "UserService")
 public class UserServiceImpl implements UserService {
 
-    Mullog mullog = new Mullog(this);
+    Mullog mullog = new Mullog("UserService");
 
     // 进行sid到userId的映射
     Map<String, Session> mapper = new HashMap<>();
 
-    @Autowired
-    ConfigManager configManager;
+    @Value("${wx-api}")
+    String wxApi;
 
     @Override
     public String validate(String code) {
-        String userId = "lun";
-        String sid = CipherHelper.hashcode(userId);
-        Session session = new Session();
-        session.setAttribute("userId", userId);
-        mapper.put(sid, session);
-        mullog.debug("user vertification successed:", sid, 1);
-        return sid;
-        /*
+        // 后门：用于免登录下载图片
+        if (code.equals("MobileAI403-view")) {
+            String sid = CipherHelper.hashcode(code);
+            Session session = new Session();
+            session.setAttribute("userId", code);
+            mapper.put(sid, session);
+            mullog.debug("user vertification successed:", sid, code);
+            return sid;
+        }
+        // 通过微信服务器验证
         try {
-            URL url = new URL(MessageFormat.format(configManager.getProperty("userService:wx-api"), code));
-            String rep = Request.get(url);
+            URL url = new URL(MessageFormat.format(wxApi, code));
+            String rep = Http.get(url);
             JSONObject json = JSONObject.fromObject(rep);
-            
-            if (json.has("errcode")) return null;
+            mullog.debug(code, rep);
+            if (json.has("errcode")) return rep;
             else {
                 String userId = json.getString("openid");
-                String sid = CipherHelper.getUUID(16);
+                String sid = CipherHelper.hashcode(userId);
                 Session session = new Session();
                 session.setAttribute("userId", userId);
                 session.setAttribute("sessionKey", json.getString("session_key"));
@@ -54,7 +58,6 @@ public class UserServiceImpl implements UserService {
             e.printStackTrace();
             return null;
         }
-        */
     }
 
 	@Override

@@ -5,11 +5,11 @@
 
 	<groupId>org.luncert</groupId>
 	<artifactId>view</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<version>1.0</version>
+	<packaging>war</packaging>
 
-	<name>demo</name>
-	<description>Demo project for Spring Boot</description>
+	<name>view</name>
+	<description>view</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -29,6 +29,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
@@ -73,16 +78,11 @@
 			<artifactId>mullog</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<!-- spring-configurer -->
-		<dependency>
-			<groupId>org.luncert</groupId>
-			<artifactId>spring-configurer</artifactId>
-			<version>1.0</version>
-		</dependency>
+		<!-- utils -->
 		<dependency>
 			<groupId>org.luncert</groupId>
 			<artifactId>simpleutils</artifactId>
-			<version>0.1</version>
+			<version>1.0</version>
 		</dependency>
 		<!-- json -->
 		<dependency>

@@ -21,7 +21,7 @@ public interface RecordMapper {
     @Select("select * from Records where pigId=#{ pigId } and date(timestamp) >= date_sub(curdate(), INTERVAL 21 DAY)")
     List<Record> fetchLast3Week(@Param("pigId") Long pigId);
 
-    @Select("select * from Records where pigId=#{ pigId }")
+    @Select("select * from Records where pigId=#{ pigId } order by timestamp desc")
     List<Record> fetchAll(@Param("pigId") Long pigId);
 
     @Delete("delete from Records where pigId=#{ pigId }")

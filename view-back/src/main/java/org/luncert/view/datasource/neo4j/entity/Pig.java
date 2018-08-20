@@ -22,6 +22,16 @@ public class Pig {
         Dead
     }
 
+    public static Status statusValueOf(String value) {
+        value = value.toLowerCase();
+        if (value.equals("healthy")) return Status.Healthy;
+        else if (value.equals("pregnancy")) return Status.Pregnancy;
+        else if (value.equals("sick")) return Status.Sick;
+        else if (value.equals("sale")) return Status.Sale;
+        else if (value.equals("dead")) return Status.Dead;
+        else return null;
+    }
+
     @Id @GeneratedValue Long id;
 
     @Property(name = "name")
@@ -60,7 +70,5 @@ public class Pig {
             .put("picName", picName);
         return builder.toString();
     }
-
-
 
 }

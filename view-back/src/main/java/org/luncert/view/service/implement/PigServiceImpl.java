@@ -24,6 +24,7 @@ import org.luncert.view.datasource.mysql.entity.Record;
 import org.luncert.view.datasource.mysql.entity.Strain;
 import org.luncert.view.datasource.neo4j.PigRepository;
 import org.luncert.view.datasource.neo4j.entity.Pig;
+import org.luncert.view.datasource.neo4j.entity.Pig.Status;
 import org.luncert.view.service.PigService;
 import org.luncert.view.util.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,48 +103,46 @@ public class PigServiceImpl implements PigService {
     @Override
     public Result getStrainMap() { return new Result(StatusCode.OK, null, strains); }
 
-	@Override
-	public Result addPig(String userId, String name, boolean beMale, String birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId, MultipartFile file) {
+    @Override
+    public Result addPig(String userId, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file) {
+        // 检查 strain 是否合法
         if (!isValidStrainIdentifier(strain)) return new Result(StatusCode.INVALID_STRAIN_IDENTIFIER);
-
+        // 保存图片，并获取生成的 picName
         String picName;
 		try {
             picName = IOHelper.saveImage(file.getInputStream(), imageFormat, imageStorePath);
         }
         catch (Exception e) {
-            e.printStackTrace();
             return new Result(StatusCode.EXCEPTION_OCCUR, "failed to save image", e);
         }
-
+        // 存储到数据库
         Pig pig = Pig.builder()
-            .name(name)
-            .beMale(beMale)
             .userId(userId)
-            .birthdate(birthdate)
+            .name(name)
             .strain(strain)
+            .beMale(beMale)
+            .status(status)
+            .birthdate(birthdate)
             .picName(picName)
             .build();
-
         pigRepo.save(pig);
 		return new Result(StatusCode.OK, null, pig.toString());
     }
     
     @Override
-    public Result updatePig(String userId, Long pigId, String name, boolean beMale, String birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId) {
+    public Result updatePig(String userId, Long pigId, String name, int strain, boolean beMale, Status status, String birthdate) {
+        if (!isValidStrainIdentifier(strain)) return new Result(StatusCode.INVALID_STRAIN_IDENTIFIER);
+        // 获取猪
         Pig pig = findById(userId, pigId);
         if (pig != null) {
-            // modify strain
-            if (!isValidStrainIdentifier(strain)) return new Result(StatusCode.INVALID_STRAIN_IDENTIFIER);
-            else pig.setStrain(strain);
-
-            // others
+            // 更新数据
             pig.setName(name);
+            pig.setStrain(strain);
             pig.setBeMale(beMale);
+            pig.setStatus(status);
             pig.setBirthdate(birthdate);
-
             // save
             pigRepo.save(pig);
-
             return new Result(StatusCode.OK, null, pig.toString());
         }
         else return new Result(StatusCode.PIG_NOT_FOUND);
@@ -198,7 +197,7 @@ public class PigServiceImpl implements PigService {
     }
 
 	@Override
-	public Result addRecord(MultipartFile file, Long pigId, String description) {
+	public Result addRecord(MultipartFile file, Long pigId, float weight, String description) {
         if (file.isEmpty()
             || file.getOriginalFilename() == null
             || description.equals("")) {
@@ -214,7 +213,13 @@ public class PigServiceImpl implements PigService {
             return new Result(StatusCode.EXCEPTION_OCCUR, null, e);
         }
 
-        recordMapper.addRecord(pigId, description, DateHelper.now(), picName);
+        recordMapper.addRecord(Record.builder()
+            .pigId(pigId)
+            .weight(weight)
+            .description(description)
+            .timestamp(DateHelper.now())
+            .picName(picName)
+            .build());
         return new Result(StatusCode.OK);
     }
 

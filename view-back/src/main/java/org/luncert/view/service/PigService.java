@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 
 import org.luncert.simpleutils.Result;
 import org.luncert.view.datasource.mysql.entity.Record;
+import org.luncert.view.datasource.neo4j.entity.Pig.Status;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface PigService {
@@ -18,12 +19,21 @@ public interface PigService {
     Result getStrainMap();
 
     /**
-     * 登记新猪
+     * @param userId 持有者ID
+     * @param name 昵称
+     * @param strain 品种
+     * @param beMale 是否为雄性
+     * @param status 身体状态
+     * @param birthdate 出生日期
+     * @param file 照片
      */
-    Result addPig(String userId, String name, boolean beMale, String birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId, MultipartFile file);
+    Result addPig(String userId, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file);
     
-    Result updatePig(String userId, Long pigId, String name, boolean beMale, String birthdate, int strain, String health, String eatingHabits, String appetite, Long fatherId, Long motherId);
+    Result updatePig(String userId, Long pigId, String name, int strain, boolean beMale, Status status, String birthdate);
 
+    /**
+     * 查询用户登记的所有猪
+     */
     Result fetchAllPigs(String userId);
 
     Result queryById(String userId, Long pigId);
@@ -39,7 +49,7 @@ public interface PigService {
      */
     Result deleteById(String userId, Long id);
 
-    Result addRecord(MultipartFile file, Long pigId, String description);
+    Result addRecord(MultipartFile file, Long pigId, float weight, String description);
 
     /**
      * 获得猪的所有生长记录

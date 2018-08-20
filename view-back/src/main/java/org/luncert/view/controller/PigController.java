@@ -8,6 +8,7 @@ import com.github.pagehelper.PageInfo;
 
 import org.luncert.simpleutils.Result;
 import org.luncert.view.datasource.mysql.entity.Record;
+import org.luncert.view.datasource.neo4j.entity.Pig;
 import org.luncert.view.service.PigService;
 import org.luncert.view.service.UserService;
 import org.luncert.view.util.StatusCode;
@@ -47,20 +48,16 @@ public class PigController {
     @PostMapping("addPig")
     public String addPig(@RequestParam String sid,
         @RequestParam String name,
-        @RequestParam boolean beMale,
-        @RequestParam String birthdate,
         @RequestParam int strain,
-        @RequestParam String health,
-        @RequestParam String eatingHabits,
-        @RequestParam String appetite,
-        @RequestParam Long fatherId,
-        @RequestParam Long motherId,
+        @RequestParam boolean beMale,
+        @RequestParam String status,
+        @RequestParam String birthdate,
         @RequestParam(name = "image") MultipartFile file) throws ParseException {
 
         Result result;
         String userId = userService.getUserId(sid);
         if (userId != null) {
-            result = pigService.addPig(userId, name, beMale, birthdate, strain, health, eatingHabits, appetite, fatherId, motherId, file);
+            result = pigService.addPig(userId, name,strain, beMale, Pig.statusValueOf(status), birthdate, file);
         }
         else result = new Result(StatusCode.INVALID_SID);
         return result.toString();
@@ -70,19 +67,15 @@ public class PigController {
     public String updatePig(@RequestParam String sid,
         @RequestParam Long pigId,
         @RequestParam String name,
-        @RequestParam boolean beMale,
-        @RequestParam String birthdate,
         @RequestParam int strain,
-        @RequestParam String health,
-        @RequestParam String eatingHabits,
-        @RequestParam String appetite,
-        @RequestParam Long fatherId,
-        @RequestParam Long motherId) {
+        @RequestParam boolean beMale,
+        @RequestParam String status,
+        @RequestParam String birthdate) {
 
         Result result;
         String userId = userService.getUserId(sid);
         if (userId != null) {
-            result = pigService.updatePig(userId, pigId, name, beMale, birthdate, strain, health, eatingHabits, appetite, fatherId, motherId);
+            result = pigService.updatePig(userId, pigId, name, strain, beMale, Pig.statusValueOf(status), birthdate);
         }
         else result = new Result(StatusCode.INVALID_SID);
         return result.toString();
@@ -119,9 +112,10 @@ public class PigController {
     public String addRecord(@RequestParam("image") MultipartFile multipartFile,
         @RequestParam String sid,
         @RequestParam Long pigId,
+        @RequestParam float weight,
         @RequestParam String description) {
 
-        if (userService.beValidSid(sid)) return pigService.addRecord(multipartFile, pigId, description).toString();
+        if (userService.beValidSid(sid)) return pigService.addRecord(multipartFile, pigId, weight, description).toString();
         else return new Result(StatusCode.INVALID_SID).toString();
     }
 

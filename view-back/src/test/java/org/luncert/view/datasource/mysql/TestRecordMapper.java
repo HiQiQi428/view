@@ -20,7 +20,13 @@ public class TestRecordMapper {
 
     // @Test
     public void testAddRecord() {
-        recordMapper.addRecord(12L, "good", DateHelper.now(), "null");
+        recordMapper.addRecord(Record.builder()
+            .pigId(12L)
+            .weight(12.5f)
+            .description("good")
+            .timestamp(DateHelper.now())
+            .picName(null)
+            .build());
     }
 
     @Test

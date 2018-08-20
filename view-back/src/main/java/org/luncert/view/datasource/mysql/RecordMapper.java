@@ -12,8 +12,8 @@ import org.luncert.view.datasource.mysql.entity.Record;
 @Mapper
 public interface RecordMapper {
 
-    @Insert("insert into Records(pigId, description, timestamp, picName) values(#{ pigId }, #{ description }, #{ timestamp }, #{ picName })")
-    void addRecord(@Param("pigId") Long pigId, @Param("description") String description, @Param("timestamp") String timestamp, @Param("picName") String picName);
+    @Insert("insert into Records(pigId, weight, description, timestamp, picName) values(#{ record.pigId }, #{ record.weight }, #{ record.description }, #{ record.timestamp }, #{ record.picName })")
+    void addRecord(@Param("record") Record record);
 
     @Select("select * from Records where pigId=#{ pigId } and date(timestamp) >= date_sub(curdate(), INTERVAL 7 DAY)")
     List<Record> fetchLastWeek(@Param("pigId") Long pigId);

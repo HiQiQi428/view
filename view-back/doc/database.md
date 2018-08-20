@@ -17,6 +17,7 @@ name | type | description
 - | :-: | -:
 id | int | 记录id
 pigId | long | 猪id
+weight | float | 重量(kg)
 description | String | 描述
 timestamp | String | 记录时间
 picName | char(32) | 图片ID

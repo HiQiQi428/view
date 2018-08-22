@@ -9,10 +9,10 @@ import org.luncert.view.datasource.mysql.entity.Admin;
 @Mapper
 public interface AdminMapper {
 
-    @Select("SELECT * FROM Admin WHERE account = {#account}")
-    public Admin queryByAccount(@Param("account") String account);
+    @Select("SELECT * FROM Admin WHERE account = #{ account }")
+    Admin queryByAccount(@Param("account") String account);
 
-    @Insert("INSERT INTO Admin(account, password) VALUES({#admin.account}, {#admin.password})")
-    public void addAdmin(@Param("admin") Admin admin);
+    @Insert("INSERT INTO Admin(account, password) VALUES(#{ admin.account }, #{ admin.password })")
+    void addAdmin(@Param("admin") Admin admin);
     
 }

@@ -1,5 +1,7 @@
 package org.luncert.view.service;
 
+import org.luncert.simpleutils.JsonResult;
+
 public interface UserService {
     
     /**
@@ -9,10 +11,18 @@ public interface UserService {
     boolean validate(String code);
 
     /**
-     * 用于 PC 端管理员验证
+     * PC 端管理员验证
      */
     boolean validateAdmin(String account, String password);
 
+    /**
+     * PC 端管理员注册
+     */
     boolean registerAdmin(String account, String password);
+
+    /**
+     * 管理员查询所有微信用户
+     */
+    JsonResult queryAllWxUser();
 
 }

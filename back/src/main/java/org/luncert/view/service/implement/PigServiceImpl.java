@@ -1,7 +1,5 @@
 package org.luncert.view.service.implement;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -9,14 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletResponse;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-
-import org.luncert.simpleutils.ContentType;
-import org.luncert.simpleutils.DateHelper;
-import org.luncert.simpleutils.IOHelper;
 import org.luncert.simpleutils.JsonResult;
 import org.luncert.view.datasource.mysql.RecordMapper;
 import org.luncert.view.datasource.mysql.StrainMapper;
@@ -27,10 +18,10 @@ import org.luncert.view.datasource.neo4j.WxUserRepository;
 import org.luncert.view.datasource.neo4j.entity.Pig;
 import org.luncert.view.datasource.neo4j.entity.WxUser;
 import org.luncert.view.datasource.neo4j.entity.Pig.Status;
+import org.luncert.view.service.ImageService;
 import org.luncert.view.service.PigService;
-import org.luncert.view.util.StatusCode;
+import org.luncert.view.pojo.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,18 +35,15 @@ public class PigServiceImpl implements PigService {
     RecordMapper recordMapper;
 
     @Autowired
+    ImageService imageService;
+
+    @Autowired
     WxUserRepository wxUserRepos;
 
     @Autowired
     PigRepository pigRepo;
 
     Map<Integer, String> strains;
-
-    @Value("${image.storePath}")
-    String imageStorePath;
-
-    @Value("${image.format}")
-    String imageFormat;
 
     private boolean isValidStrainIdentifier(int strain) {
         return strains.containsKey(strain);
@@ -66,31 +54,13 @@ public class PigServiceImpl implements PigService {
             strains.put(item.getId(), item.getValue());
     }
 
-    private void deleteImage(String picName) {
-        File file = new File(imageStorePath, picName);
-        if (file.exists())
-            file.delete();
-    }
-
     /**
-     * 初始化 strainMap，检查 imageStorePath、imageFormat
+     * 初始化 strainMap
      */
     @PostConstruct
     public void init() throws IOException {
         strains = new HashMap<>();
         updateStrainMap();
-        // init image store path
-        if (imageStorePath == null || imageStorePath.length() == 0) {
-            throw new NullPointerException("image store path");
-        } else {
-            File storeDir = new File(imageStorePath);
-            if (!storeDir.exists())
-                storeDir.mkdirs();
-        }
-        // check image format
-        if (imageFormat == null || imageFormat.length() == 0) {
-            throw new NullPointerException("image format");
-        }
     }
 
     @Override
@@ -98,6 +68,17 @@ public class PigServiceImpl implements PigService {
         strainMapper.addStrain(value);
         updateStrainMap();
         return new JsonResult(StatusCode.OK, null, strains);
+    }
+
+    @Override
+    public JsonResult deleteStrain(int id) {
+        if (strains.containsKey(id)) {
+            strainMapper.deleteStrain(id);
+            strains.remove(id);
+            return new JsonResult(StatusCode.OK);
+        }
+        else
+            return new JsonResult(StatusCode.INVALID_STRAINID);
     }
 
     @Override
@@ -110,7 +91,7 @@ public class PigServiceImpl implements PigService {
 
         String picName;
 		try {
-            picName = IOHelper.saveImage(file.getInputStream(), imageFormat, imageStorePath);
+            picName = imageService.save(file);
         }
         catch (Exception e) {
             return new JsonResult(StatusCode.EXCEPTION_OCCUR, "failed to save image", e);
@@ -128,6 +109,15 @@ public class PigServiceImpl implements PigService {
         wxUserRepos.addPig(wxUser, pig);
 
 		return new JsonResult(StatusCode.OK, null, pig.toString());
+    }
+
+    @Override
+    public JsonResult addPig(String userId, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file) {
+        WxUser wxUser = wxUserRepos.findByUserId(userId);
+        if (wxUser != null)
+            return addPig(wxUser, name, strain, beMale, status, birthdate, file);
+        else
+            return new JsonResult(StatusCode.INVALID_USERID);
     }
     
     @Override
@@ -153,10 +143,19 @@ public class PigServiceImpl implements PigService {
 	@Override
 	public JsonResult fetchAllPigs(WxUser wxUser) {
         List<Pig> data = wxUserRepos.findPigs(wxUser);
-        if (data != null)
+        if (data != null && data.size() > 0)
             return new JsonResult(StatusCode.OK, null, data);
         else
             return new JsonResult(StatusCode.FOUND_NOTHING);
+    }
+
+    @Override
+    public JsonResult fetchAllPigs(String userId) {
+        WxUser wxUser = wxUserRepos.findByUserId(userId);
+        if (wxUser != null)
+            return fetchAllPigs(wxUser);
+        else
+            return new JsonResult(StatusCode.INVALID_USERID);
     }
 
     @Override
@@ -167,75 +166,26 @@ public class PigServiceImpl implements PigService {
             wxUserRepos.removePig(wxUser, pig);
             pigRepo.delete(pig);
 
-            deleteImage(pig.getPicName());
+            imageService.delete(pig.getPicName());
             List<Record> records = recordMapper.fetchAll(pigId);
             for (Record record : records) {
-                deleteImage(record.getPicName());
+                imageService.delete(record.getPicName());
             }
 
-            recordMapper.deleteById(pigId);
+            recordMapper.deleteByPigId(pigId);
             return new JsonResult(StatusCode.OK);
         }
         else
             return new JsonResult(StatusCode.PIG_NOT_FOUND);
     }
 
-	@Override
-	public JsonResult addRecord(MultipartFile file, Long pigId, float weight, String description) {
-        if (file.isEmpty()
-            || file.getOriginalFilename() == null
-            || description.equals("")) {
-            return new JsonResult(StatusCode.FIELD_IS_NULL);
-        }
-
-        String picName = null;
-        try {
-            picName = IOHelper.saveImage(file.getInputStream(), imageFormat, imageStorePath);
-        }
-        catch (Exception e) {
-            return new JsonResult(StatusCode.EXCEPTION_OCCUR, null, e);
-        }
-
-        recordMapper.addRecord(Record.builder()
-            .pigId(pigId)
-            .weight(weight)
-            .description(description)
-            .timestamp(DateHelper.now())
-            .picName(picName)
-            .build());
-            
-        return new JsonResult(StatusCode.OK);
-    }
-
     @Override
-    public PageInfo<Record> fetchAllRecords(int pageSize, int pageNum, Long pigId) {
-        PageHelper.startPage(pageNum, pageSize);
-        return new PageInfo<Record>(recordMapper.fetchAll(pigId));
-    }
-
-    @Override
-    public PageInfo<Record> fetchLastWeekRecords(int pageSize, int pageNum, Long pigId) {
-        PageHelper.startPage(pageNum, pageSize);
-        return new PageInfo<Record>(recordMapper.fetchLastWeek(pigId));
-    }
-
-    @Override
-    public PageInfo<Record> fetchLast3WeekRecords(int pageSize, int pageNum, Long pigId) {
-        PageHelper.startPage(pageNum, pageSize);
-        return new PageInfo<Record>(recordMapper.fetchLast3Week(pigId));
-    }
-
-    @Override
-    public JsonResult loadImage(String picName, HttpServletResponse response) {
-        File file = new File(imageStorePath, picName);
-        if (!file.exists()) return new JsonResult(StatusCode.PICTURE_NOT_FOUND);
-		try {
-			FileInputStream inputStream = new FileInputStream(file);
-            IOHelper.writeResponse(ContentType.CONTENT_TYPE_JPEG, inputStream, response, true);
-            return null; // ok
-		} catch (IOException e) {
-            return new JsonResult(StatusCode.EXCEPTION_OCCUR, null, e);
-		}
+    public JsonResult deleteById(String userId, Long pigId) {
+        WxUser wxUser = wxUserRepos.findByUserId(userId);
+        if (wxUser != null)
+            return deleteById(wxUser, pigId);
+        else
+            return null;
     }
 
 }

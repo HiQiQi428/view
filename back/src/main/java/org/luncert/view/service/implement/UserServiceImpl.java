@@ -5,12 +5,14 @@ import java.text.MessageFormat;
 
 import org.luncert.simpleutils.CipherHelper;
 import org.luncert.simpleutils.Http;
+import org.luncert.simpleutils.JsonResult;
 import org.luncert.springauth.AuthManager;
-import org.luncert.springauth.Identity;
 import org.luncert.view.datasource.mysql.AdminMapper;
 import org.luncert.view.datasource.mysql.entity.Admin;
 import org.luncert.view.datasource.neo4j.WxUserRepository;
 import org.luncert.view.datasource.neo4j.entity.WxUser;
+import org.luncert.view.pojo.Role;
+import org.luncert.view.pojo.StatusCode;
 import org.luncert.view.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +50,7 @@ public class UserServiceImpl implements UserService {
             else {
                 String userId = json.getString("openid");
                 WxUser wxUser = wxUserRepos.findByUserId(userId);
-                authManager.grant(Identity.NormalUser, wxUser);
+                authManager.grant(Role.NORMAL, wxUser);
                 return true;
             }
 		} catch (Exception e) {
@@ -61,7 +63,7 @@ public class UserServiceImpl implements UserService {
 	public boolean validateAdmin(String account, String password) {
         Admin admin = adminMapper.queryByAccount(account);
         if (admin != null && CipherHelper.hashcode(password).equals(admin.getPassword())) {
-            authManager.grant(Identity.Administrator, admin);
+            authManager.grant(Role.ADMIN, admin);
             return true;
         }
         else
@@ -79,5 +81,11 @@ public class UserServiceImpl implements UserService {
         else
             return false;
     }
+
+	@Override
+	public JsonResult queryAllWxUser() {
+        // 查询深度 0
+        return new JsonResult(StatusCode.OK, null, wxUserRepos.findAll(0));
+	}
     
 }

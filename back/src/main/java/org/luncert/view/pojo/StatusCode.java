@@ -1,4 +1,4 @@
-package org.luncert.view.util;
+package org.luncert.view.pojo;
 
 public interface StatusCode {
 
@@ -27,5 +27,11 @@ public interface StatusCode {
     public static final int VALIDATE_FAILED = 8;
 
     public static final int REGISTER_FAILED = 9;
+
+    public static final int INVALID_USERID = 10;
+
+    public static final int INVALID_RECORDID = 11;
+
+    public static final int INVALID_STRAINID = 12;
 
 }

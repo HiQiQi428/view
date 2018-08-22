@@ -1,8 +1,10 @@
 package org.luncert.view.controller;
 
 import org.luncert.simpleutils.JsonResult;
+import org.luncert.springauth.annotation.AuthRequired;
 import org.luncert.view.service.UserService;
-import org.luncert.view.util.StatusCode;
+import org.luncert.view.pojo.Role;
+import org.luncert.view.pojo.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,8 +16,6 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
-    // public String 
 
     @GetMapping("validate")
     public String validate(String code) {
@@ -39,6 +39,12 @@ public class UserController {
             return JsonResult.build(StatusCode.OK);
         else
             return JsonResult.build(StatusCode.REGISTER_FAILED);
+    }
+
+    @AuthRequired(accessLevel = Role.ADMIN)
+    @GetMapping("queryAllWxUser")
+    public String queryAllWxUser() {
+        return userService.queryAllWxUser().toString();
     }
     
 }

@@ -72,7 +72,7 @@ public class Pig {
             .put("id", id)
             .put("name", name)
             .put("strain", strain)
-            .put("status", status)
+            .put("status", status.toString())
             .put("beMale", beMale)
             .put("birthdata", birthdate)
             .put("picName", picName);

@@ -72,12 +72,6 @@
 			<artifactId>pagehelper-spring-boot-starter</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-		<!-- mullog -->
-		<dependency>
-			<groupId>org.luncert</groupId>
-			<artifactId>mullog</artifactId>
-			<version>1.0</version>
-		</dependency>
 		<!-- auth -->
 		<dependency>
 			<groupId>org.luncert</groupId>

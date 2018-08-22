@@ -2,7 +2,6 @@ package org.luncert.view.datasource.mysql;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.luncert.mullog.Mullog;
 import org.luncert.simpleutils.DateHelper;
 import org.luncert.view.datasource.mysql.entity.Record;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +12,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class TestRecordMapper {
     
-    Mullog mullog = new Mullog("Test");
-
     @Autowired
     RecordMapper recordMapper;
 
@@ -32,7 +29,7 @@ public class TestRecordMapper {
     @Test
     public void testFetchLast3Week() {
         for (Record r : recordMapper.fetchLast3Week(12L)) {
-            mullog.info(r);
+            System.out.println(r);
         }
     }
 

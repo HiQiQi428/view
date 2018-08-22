@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
-import org.luncert.mullog.Mullog;
 import org.luncert.simpleutils.ContentType;
 import org.luncert.simpleutils.DateHelper;
 import org.luncert.simpleutils.IOHelper;
@@ -37,8 +36,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class PigServiceImpl implements PigService {
-
-    Mullog mullog = new Mullog("PigService");
 
     @Autowired
     StrainMapper strainMapper;

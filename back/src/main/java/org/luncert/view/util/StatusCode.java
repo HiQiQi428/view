@@ -24,4 +24,8 @@ public interface StatusCode {
 
     public static final int PICTURE_NOT_FOUND = 7;
 
+    public static final int VALIDATE_FAILED = 8;
+
+    public static final int REGISTER_FAILED = 9;
+
 }

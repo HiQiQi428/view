@@ -37,9 +37,6 @@ public class Pig {
     @Property(name = "name")
     String name;
 
-    @Property(name = "userId")
-    String userId;
-
     // 品系
     @Property(name = "strain")
     int strain;
@@ -57,12 +54,23 @@ public class Pig {
     @Property(name = "picName")
     String picName;
 
+    public Pig() {}
+
+    public Pig(Long id, String name, int strain, Status status, boolean beMale, String birthdate, String picName) {
+        this.id = id;
+        this.name = name;
+        this.strain = strain;
+        this.status = status;
+        this.beMale = beMale;
+        this.birthdate = birthdate;
+        this.picName = picName;
+    }
+
     @Override
     public String toString() {
         JSONBuilder builder = new JSONBuilder()
             .put("id", id)
             .put("name", name)
-            .put("userId", userId)
             .put("strain", strain)
             .put("status", status)
             .put("beMale", beMale)

@@ -78,6 +78,12 @@
 			<artifactId>mullog</artifactId>
 			<version>1.0</version>
 		</dependency>
+		<!-- auth -->
+		<dependency>
+			<groupId>org.luncert</groupId>
+			<artifactId>spring-auth</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<!-- utils -->
 		<dependency>
 			<groupId>org.luncert</groupId>

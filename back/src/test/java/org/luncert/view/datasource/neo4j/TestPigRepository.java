@@ -22,31 +22,15 @@ public class TestPigRepository {
 
     // @Test
     public void testSave() {
-        Pig pig = Pig.builder().name("pigy").userId("lun").birthdate(new Date().toString()).strain(1).status(Pig.Status.Healthy).build();
+        Pig pig = Pig.builder().name("pigy").birthdate(new Date().toString()).strain(1).status(Pig.Status.Healthy).build();
         repo.save(pig);
     }
 
     @Test
     public void testFindByName() {
-        List<Pig> pigs = repo.findByName("lun", "pigy");
+        List<Pig> pigs = repo.findByName("x9");
         for (Pig pig : pigs) {
             mullog.info("findByName", pig.getName());
-        }
-    }
-
-    @Test
-    public void testFindByStrain() {
-        List<Pig> pigs = repo.findByStrain("lun", 1);
-        for (Pig pig : pigs) {
-            mullog.info("findByStrain", pig.getName());
-        }
-    }
-
-    @Test
-    public void testFindByUserId() {
-        List<Pig> pigs = repo.findByUserId("lun");
-        for (Pig pig : pigs) {
-            mullog.info("findByUserId", pig.getName());
         }
     }
 

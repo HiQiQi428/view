@@ -4,21 +4,25 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageInfo;
 
-import org.luncert.simpleutils.Result;
+import org.luncert.simpleutils.JsonResult;
 import org.luncert.view.datasource.mysql.entity.Record;
+import org.luncert.view.datasource.neo4j.entity.WxUser;
 import org.luncert.view.datasource.neo4j.entity.Pig.Status;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface PigService {
 
-    Result addStrain(String value);
+    JsonResult addStrain(String value);
 
     /**
      * 获取品系id与品系描述的对照表
      */
-    Result getStrainMap();
+    JsonResult getStrainMap();
 
     /**
+     * 检查 strain 是否合法
+     * 保存图片，并生成唯一的 picName
+     * 存储 pig 到数据库，并与 wxUser 建立关系
      * @param userId 持有者ID
      * @param name 昵称
      * @param strain 品种
@@ -27,29 +31,27 @@ public interface PigService {
      * @param birthdate 出生日期
      * @param file 照片
      */
-    Result addPig(String userId, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file);
+    JsonResult addPig(WxUser wxUser, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file);
     
-    Result updatePig(String userId, Long pigId, String name, int strain, boolean beMale, Status status, String birthdate);
+    /**
+     * 检查 strain 是否合法
+     * 获取 pig 并更新属性
+     */
+    JsonResult updatePig(Long pigId, String name, int strain, boolean beMale, Status status, String birthdate);
 
     /**
-     * 查询用户登记的所有猪
+     * 通过 WxUserRepository 查询 wxUser 登记的所有猪
      */
-    Result fetchAllPigs(String userId);
-
-    Result queryById(String userId, Long pigId);
-
-    @Deprecated
-    Result queryByName(String userId, String name);
-
-    @Deprecated
-    Result queryByStrain(String userId, int strain);
+	JsonResult fetchAllPigs(WxUser wxUser);
 
     /**
-     * 删除
+     * 删除 neo4j 数据（包括 pig 与其登记者间的关系）、所有图片及 mysql 中的生长记录
+     * @param wxUser 登记者
+     * @param pigId 猪 id
      */
-    Result deleteById(String userId, Long id);
+    JsonResult deleteById(WxUser wxUser, Long id);
 
-    Result addRecord(MultipartFile file, Long pigId, float weight, String description);
+    JsonResult addRecord(MultipartFile file, Long pigId, float weight, String description);
 
     /**
      * 获得猪的所有生长记录
@@ -66,6 +68,9 @@ public interface PigService {
      */
     PageInfo<Record> fetchLast3WeekRecords(int pageSize, int pageNum, Long pigId);
     
-    Result loadImage(String picName, HttpServletResponse response);
+    /**
+     * 用于直接读图片，操作成功 JsonResult 的 data 为空，否则 为异常信息
+     */
+    JsonResult loadImage(String picName, HttpServletResponse response);
 
 }

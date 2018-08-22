@@ -6,14 +6,13 @@ public interface UserService {
      * @param code: 微信小程序上传的临时code，可用来向微信服务器查询用户唯一标识
      * @return: 返回sid，往后小程序的所有请求都必须带上sid
      */
-    String validate(String code);
+    boolean validate(String code);
 
     /**
-     * @param sid: 服务器生成的用户临时标识
-     * @return: 微信api提供的用户唯一标识
+     * 用于 PC 端管理员验证
      */
-    String getUserId(String sid);
+    boolean validateAdmin(String account, String password);
 
-    boolean beValidSid(String sid);
+    boolean registerAdmin(String account, String password);
 
 }

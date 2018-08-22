@@ -26,3 +26,9 @@ name | type | description
 - | :-: | -:
 id | int | 品系id
 value | String | 描述
+#### Administrator
+name | type | description
+- | :-: | -:
+id | int | 管理员id
+account | varchar(20) | 帐号
+password | varchar(20) | 密码hash

@@ -53,3 +53,7 @@ public void addResourceHandlers(ResourceHandlerRegistry registry) {
 ## spring boot基于注解获取应用配置文件内容: https://blog.csdn.net/u010005147/article/details/79720172
 
 ## default关键字了解一下？
+
+## lombok 的 @Builder 和 spring neo4j 有冲突（默认构造器的问题）
+
+## 这里我是通过在特定 controller 上加注解支持中文的，因为 servlet 级别的中文配置（改 config 文件）会导致 controller 方法返回非常规对象时自动转 JSON 失败，在这种情况下还得自己配置一个转换器

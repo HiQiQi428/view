@@ -11,7 +11,6 @@ import javax.annotation.PostConstruct;
 import org.luncert.simpleutils.JsonResult;
 import org.luncert.view.datasource.mysql.RecordMapper;
 import org.luncert.view.datasource.mysql.StrainMapper;
-import org.luncert.view.datasource.mysql.entity.Record;
 import org.luncert.view.datasource.mysql.entity.Strain;
 import org.luncert.view.datasource.neo4j.PigRepository;
 import org.luncert.view.datasource.neo4j.WxUserRepository;
@@ -41,7 +40,7 @@ public class PigServiceImpl implements PigService {
     WxUserRepository wxUserRepos;
 
     @Autowired
-    PigRepository pigRepo;
+    PigRepository pigRepos;
 
     Map<Integer, String> strains;
 
@@ -105,8 +104,8 @@ public class PigServiceImpl implements PigService {
             .birthdate(birthdate)
             .picName(picName)
             .build();
-        pigRepo.save(pig);
-        wxUserRepos.addPig(wxUser, pig);
+        pigRepos.save(pig);
+        wxUserRepos.bindPig(wxUser, pig);
 
 		return new JsonResult(StatusCode.OK, null, pig.toString());
     }
@@ -121,11 +120,11 @@ public class PigServiceImpl implements PigService {
     }
     
     @Override
-    public JsonResult updatePig(Long pigId, String name, int strain, boolean beMale, Status status, String birthdate) {
+    public JsonResult updatePig(long pigId, String name, int strain, boolean beMale, Status status, String birthdate) {
         if (!isValidStrainIdentifier(strain))
             return new JsonResult(StatusCode.INVALID_STRAIN_IDENTIFIER);
 
-        Optional<Pig> optional = pigRepo.findById(pigId);
+        Optional<Pig> optional = pigRepos.findById(pigId);
         if (optional.isPresent()) {
             Pig pig = optional.get();
             pig.setName(name);
@@ -133,7 +132,7 @@ public class PigServiceImpl implements PigService {
             pig.setBeMale(beMale);
             pig.setStatus(status);
             pig.setBirthdate(birthdate);
-            pigRepo.save(pig);
+            pigRepos.save(pig);
             return new JsonResult(StatusCode.OK, null, pig.toString());
         }
         else
@@ -159,18 +158,17 @@ public class PigServiceImpl implements PigService {
     }
 
     @Override
-    public JsonResult deleteById(WxUser wxUser, Long pigId) {
-        Optional<Pig> optional = pigRepo.findById(pigId);
+    public JsonResult deleteById(WxUser wxUser, long pigId) {
+        Optional<Pig> optional = pigRepos.findById(pigId);
         if (optional.isPresent()) {
             Pig pig = optional.get();
-            wxUserRepos.removePig(wxUser, pig);
-            pigRepo.delete(pig);
+            wxUserRepos.unbindPig(wxUser, pig);
+            pigRepos.delete(pig);
 
             imageService.delete(pig.getPicName());
-            List<Record> records = recordMapper.fetchAll(pigId);
-            for (Record record : records) {
-                imageService.delete(record.getPicName());
-            }
+            recordMapper.fetchPicNameByPigId(pigId).forEach((picName) -> {
+                imageService.delete(picName);
+            });;
 
             recordMapper.deleteByPigId(pigId);
             return new JsonResult(StatusCode.OK);
@@ -180,7 +178,7 @@ public class PigServiceImpl implements PigService {
     }
 
     @Override
-    public JsonResult deleteById(String userId, Long pigId) {
+    public JsonResult deleteById(String userId, long pigId) {
         WxUser wxUser = wxUserRepos.findByUserId(userId);
         if (wxUser != null)
             return deleteById(wxUser, pigId);
@@ -189,3 +187,4 @@ public class PigServiceImpl implements PigService {
     }
 
 }
+// 

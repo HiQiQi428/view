@@ -42,7 +42,7 @@ public interface PigService {
      * 检查 strain 是否合法
      * 获取 pig 并更新属性
      */
-    JsonResult updatePig(Long pigId, String name, int strain, boolean beMale, Status status, String birthdate);
+    JsonResult updatePig(long pigId, String name, int strain, boolean beMale, Status status, String birthdate);
 
     /**
      * 通过 WxUserRepository 查询 wxUser 登记的所有猪
@@ -59,11 +59,11 @@ public interface PigService {
      * @param wxUser 登记者
      * @param pigId 猪 id
      */
-    JsonResult deleteById(WxUser wxUser, Long pigId);
+    JsonResult deleteById(WxUser wxUser, long pigId);
 
     /**
      * 管理员接口
      */
-    JsonResult deleteById(String userId, Long pigId);
-
+    JsonResult deleteById(String userId, long pigId);
+    
 }

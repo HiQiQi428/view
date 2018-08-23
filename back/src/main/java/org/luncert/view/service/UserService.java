@@ -25,4 +25,11 @@ public interface UserService {
      */
     JsonResult queryAllWxUser();
 
+    /**
+     * 管理员删除用户，包括与用户关联的所有数据<br></br>
+     * 两次 mysql 查询：获取所有相关图片名、删除所有相关记录<br></br>
+     * 两次次 neo4j 操作：获取 wxUser、删除 wxUser
+     */
+    JsonResult deleteWxUser(String userId);
+
 }

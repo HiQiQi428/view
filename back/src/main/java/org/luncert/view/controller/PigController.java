@@ -53,7 +53,7 @@ public class PigController {
 
     @AuthRequired
     @GetMapping("fetchAllPigs")
-    public String fetchAllPigs(@AuthUser WxUser wxUser, @RequestParam(required = false) String userId) {
+    public String fetchAllPigs(@AuthUser WxUser wxUser) {
         return pigService.fetchAllPigs(wxUser).toString();
     }
 

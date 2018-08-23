@@ -2,17 +2,21 @@ package org.luncert.view.service.implement;
 
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.List;
 
 import org.luncert.simpleutils.CipherHelper;
 import org.luncert.simpleutils.Http;
 import org.luncert.simpleutils.JsonResult;
 import org.luncert.springauth.AuthManager;
 import org.luncert.view.datasource.mysql.AdminMapper;
+import org.luncert.view.datasource.mysql.RecordMapper;
 import org.luncert.view.datasource.mysql.entity.Admin;
 import org.luncert.view.datasource.neo4j.WxUserRepository;
+import org.luncert.view.datasource.neo4j.entity.Pig;
 import org.luncert.view.datasource.neo4j.entity.WxUser;
 import org.luncert.view.pojo.Role;
 import org.luncert.view.pojo.StatusCode;
+import org.luncert.view.service.ImageService;
 import org.luncert.view.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,12 +26,18 @@ import net.sf.json.JSONObject;
 
 @Service
 public class UserServiceImpl implements UserService {
+    
+    @Autowired
+    RecordMapper recordMapper;
 
     @Autowired
     AdminMapper adminMapper;
 
     @Autowired
     WxUserRepository wxUserRepos;
+
+    @Autowired
+    ImageService imageService;
 
     @Autowired
     AuthManager authManager;
@@ -86,6 +96,21 @@ public class UserServiceImpl implements UserService {
 	public JsonResult queryAllWxUser() {
         // 查询深度 0
         return new JsonResult(StatusCode.OK, null, wxUserRepos.findAll(0));
+	}
+
+	@Override
+	public JsonResult deleteWxUser(String userId) {
+        for (WxUser wxUser : wxUserRepos.findAll(1)) {
+            // 删除 neo4j 数据：关系、节点、图片
+            List<Pig> pigs = wxUser.getPigs();
+            pigs.forEach((pig) -> imageService.delete(pig.getPicName()));
+            wxUserRepos.deleteWxUser(wxUser);
+            // 删除 mysql 数据：记录、图片
+            recordMapper.fetchPicNameByPigs(pigs).forEach((picName) -> imageService.delete(picName));
+            recordMapper.deleteByPigs(pigs);
+        }
+
+        return new JsonResult(StatusCode.OK);
 	}
     
 }

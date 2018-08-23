@@ -51,6 +51,8 @@ public class ImageServiceImpl implements ImageService {
 
 	@Override
 	public boolean delete(String picName) {
+        if (picName == null)
+            return false;
         File file = new File(imageStorePath, picName);
         if (file.exists()) {
             file.delete();

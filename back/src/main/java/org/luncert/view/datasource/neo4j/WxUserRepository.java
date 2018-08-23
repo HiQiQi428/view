@@ -18,12 +18,18 @@ public interface WxUserRepository extends Neo4jRepository<WxUser, Long>{
      * 与已存在的 pig 建立关系
      */
     @Query("START wxUser=NODE({0}), pig=NODE({1}) CREATE (wxUser)-[:beOwnerOf]->(pig)")
-    void addPig(WxUser wxUser, Pig pig);
+    void bindPig(WxUser wxUser, Pig pig);
 
     /**
      * 删除与 pig 的关系
      */
     @Query("START wxUser=NODE({0}), pig=NODE({1}) MATCH (wxUser)-[r:beOwnerOf]->(pig) DELETE r")
-    void removePig(WxUser wxUser, Pig pig);
+    void unbindPig(WxUser wxUser, Pig pig);
+
+    /**
+     * 删除所有关系、关联节点
+     */
+    @Query("START wxUser=NODE({0}) MATCH (wxUser)-[r:beOwnerOf]->(pig) DELETE wxUser, r, pig")
+    void deleteWxUser(WxUser wxUser);
 
 }

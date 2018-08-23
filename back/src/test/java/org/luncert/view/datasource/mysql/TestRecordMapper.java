@@ -1,9 +1,13 @@
 package org.luncert.view.datasource.mysql;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.luncert.simpleutils.DateHelper;
 import org.luncert.view.datasource.mysql.entity.Record;
+import org.luncert.view.datasource.neo4j.entity.Pig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -31,6 +35,13 @@ public class TestRecordMapper {
         for (Record r : recordMapper.fetchLast3Week(12L)) {
             System.out.println(r);
         }
+    }
+
+    @Test
+    public void testDeleteByPigs() {
+        List<Pig> pigs = new ArrayList<>();
+        pigs.add(Pig.builder().id(140L).build());
+        recordMapper.deleteByPigs(pigs);
     }
 
 }

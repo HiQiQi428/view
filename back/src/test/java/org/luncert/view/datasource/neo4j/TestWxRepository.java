@@ -28,7 +28,7 @@ public class TestWxRepository {
     public void testAddPig() {
         WxUser user = wxUserRepos.findByUserId("lun");
         Pig pig = pigRepos.findById(138L).get();
-        wxUserRepos.addPig(user, pig);
+        wxUserRepos.bindPig(user, pig);
     }
 
 }

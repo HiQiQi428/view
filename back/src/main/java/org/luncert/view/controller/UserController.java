@@ -46,5 +46,11 @@ public class UserController {
     public String queryAllWxUser() {
         return userService.queryAllWxUser().toString();
     }
+
+    @AuthRequired(accessLevel = Role.ADMIN)
+    @GetMapping("deleteWxUser")
+    public String deleteWxUser(String userId) {
+        return userService.deleteWxUser(userId).toString();
+    }
     
 }

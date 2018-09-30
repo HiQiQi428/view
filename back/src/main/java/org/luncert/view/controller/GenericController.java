@@ -3,7 +3,6 @@ package org.luncert.view.controller;
 import javax.servlet.http.HttpServletResponse;
 
 import org.luncert.simpleutils.JsonResult;
-import org.luncert.springauth.annotation.AuthRequired;
 import org.luncert.view.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +16,6 @@ public class GenericController {
     @Autowired
     ImageService imageService;
 
-    @AuthRequired
     @GetMapping("loadImage")
     public String loadImage(String picName, final HttpServletResponse response) {
         JsonResult JsonResult = imageService.loadImage(picName, response);

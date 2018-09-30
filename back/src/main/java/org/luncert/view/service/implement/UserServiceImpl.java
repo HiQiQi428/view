@@ -60,6 +60,11 @@ public class UserServiceImpl implements UserService {
             else {
                 String userId = json.getString("openid");
                 WxUser wxUser = wxUserRepos.findByUserId(userId);
+                if (wxUser == null) {
+                    wxUser = new WxUser();
+                    wxUser.setUserId(userId);
+                    wxUserRepos.save(wxUser);
+                }
                 authManager.grant(Role.NORMAL, wxUser);
                 return true;
             }

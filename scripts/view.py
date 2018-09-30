@@ -3,16 +3,23 @@ import sys
 import pymysql
 from requests import get
 import argparse
-from os import path, getcwd, mkdir, removedirs
+from os import path, getcwd, mkdir, removedirs, listdir, remove, rmdir
 
-validateAPI = 'http://luncert.cn:8080/view/user/validate?code=MobileAI403-view'
-downloadAPI = 'http://luncert.cn:8080/view/pig/loadImage?picName=%s&sid=%s'
+downloadAPI = 'http://ai.uppfind.com:80/view/generic/loadImage?picName='
 dbinfo = {
     'host': 'luncert.cn',
     'user': 'viewUser',
     'password': 'MobileAI403',
     'database': 'view'
 }
+
+def rm(basePath):
+    if path.isdir(basePath):
+        for file in listdir(basePath):
+            rm(path.join(basePath, file))
+        rmdir(basePath)
+    else:
+        remove(basePath)
 
 def connectDB():
     global dbinfo
@@ -33,10 +40,6 @@ def info():
     for item in data.items():
         print(str(item[0]).center(5), '|', str(item[1]).center(5))
     db.close()
-
-def getSid():
-    global validateAPI
-    return get(validateAPI).text
 
 def download(pigId):
     # get data
@@ -59,13 +62,12 @@ def download(pigId):
     if not path.exists(storePath): mkdir(storePath)
     # download
     global downloadAPI
-    sid = getSid()
     for i in range(totalNum):
         picName = data[i]['picName']
         timestamp = data[i]['timestamp'].replace(':', '-')
         print('Downloading %d/%d: %s' % (i + 1, totalNum, picName), end = '\r')
         with open(path.join(storePath, timestamp + '.jpg'), 'wb') as f:
-            f.write(get(downloadAPI % (picName, sid)).content)
+            f.write(get(downloadAPI + picName).content)
 
 def downloadAll():
     # get data
@@ -87,11 +89,10 @@ def downloadAll():
         return
     # make dir
     basePath = path.join(getcwd(), 'images')
-    if path.exists(basePath): removedirs(basePath)
+    if path.exists(basePath): rm(basePath)
     mkdir(basePath)
     # download
     global downloadAPI
-    sid = getSid()
     for pigId in data:
         pig = data[pigId]
         totalNum = len(pig)
@@ -102,7 +103,7 @@ def downloadAll():
             timestamp = pig[i]['timestamp'].replace(':', '-')
             print('Downloading %d/%d: %s' % (i + 1, totalNum, picName), end = '\r')
             with open(path.join(storePath, timestamp + '.jpg'), 'wb') as f:
-                f.write(get(downloadAPI % (picName, sid)).content)
+                f.write(get(downloadAPI + picName).content)
 
 parser = argparse.ArgumentParser(description = '图片库工具', prog = 'view')
 parser.add_argument('-i', '--info', action = 'store_const', const = True, help = '获取图片库信息')

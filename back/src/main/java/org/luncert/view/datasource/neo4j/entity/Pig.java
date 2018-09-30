@@ -74,7 +74,7 @@ public class Pig {
             .put("strain", strain)
             .put("status", status.toString())
             .put("beMale", beMale)
-            .put("birthdata", birthdate)
+            .put("birthdate", birthdate)
             .put("picName", picName);
         return builder.toString();
     }

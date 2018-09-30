@@ -77,7 +77,7 @@ public class Config implements WebMvcConfigurer {
     @Bean
     public MultipartConfigElement multipartConfigElement() throws Exception{
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize("2MB");
+        factory.setMaxFileSize("10MB");
         factory.setMaxRequestSize("1000MB");
         return factory.createMultipartConfig();
     }

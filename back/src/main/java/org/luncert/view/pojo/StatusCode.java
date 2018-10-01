@@ -34,4 +34,6 @@ public interface StatusCode {
 
     public static final int INVALID_STRAINID = 12;
 
+    public static final int STRAIN_EXISTS = 13;
+
 }

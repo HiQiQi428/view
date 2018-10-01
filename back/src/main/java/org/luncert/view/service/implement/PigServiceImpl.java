@@ -64,7 +64,11 @@ public class PigServiceImpl implements PigService {
 
     @Override
     public JsonResult addStrain(String value) {
-        strainMapper.addStrain(value);
+        try {
+            strainMapper.addStrain(value); // value 字段有UNIQUE约束,添加重复的值会抛出异常
+        } catch (Exception e) {
+            return new JsonResult(StatusCode.STRAIN_EXISTS);
+        }
         updateStrainMap();
         return new JsonResult(StatusCode.OK, null, strains);
     }

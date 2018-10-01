@@ -57,3 +57,7 @@ public void addResourceHandlers(ResourceHandlerRegistry registry) {
 ## lombok 的 @Builder 和 spring neo4j 有冲突（默认构造器的问题）
 
 ## 这里我是通过在特定 controller 上加注解支持中文的，因为 servlet 级别的中文配置（改 config 文件）会导致 controller 方法返回非常规对象时自动转 JSON 失败，在这种情况下还得自己配置一个转换器
+
+## 关于猪昵称唯一性的问题
+* 猪的昵称本身不是很重要,只是用于用户记住猪,而且本身支持猪的信息修改
+* 猪本身使用Neo4j来存储,添加约束比较麻烦,当然可以使用两次查询;

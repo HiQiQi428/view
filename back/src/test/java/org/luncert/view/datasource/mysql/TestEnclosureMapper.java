@@ -26,7 +26,7 @@ public class TestEnclosureMapper {
 
     @Test
     public void testQuery() {
-        List<Enclosure> list = enclosureMapper.query("oeZnW5TtLINjtnsMMo_O1EaKKCW4", "舍");
+        List<Enclosure> list = enclosureMapper.query("oeZnW5TtLINjtnsMMo_O1EaKKCW4");
         for (Enclosure e : list)
             System.out.println(e);
     }

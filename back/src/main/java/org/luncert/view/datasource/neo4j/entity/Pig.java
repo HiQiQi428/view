@@ -48,6 +48,9 @@ public class Pig {
     @Property(name = "beMale")
     boolean beMale;
 
+    @Property(name = "enclosure")
+    String enclosure;
+
     @Property(name = "birthdate")
     String birthdate;
 
@@ -56,12 +59,13 @@ public class Pig {
 
     public Pig() {}
 
-    public Pig(Long id, String name, int strain, Status status, boolean beMale, String birthdate, String picName) {
+    public Pig(Long id, String name, int strain, Status status, boolean beMale, String enclosure, String birthdate, String picName) {
         this.id = id;
         this.name = name;
         this.strain = strain;
         this.status = status;
         this.beMale = beMale;
+        this.enclosure = enclosure;
         this.birthdate = birthdate;
         this.picName = picName;
     }
@@ -74,6 +78,7 @@ public class Pig {
             .put("strain", strain)
             .put("status", status.toString())
             .put("beMale", beMale)
+            .put("enclosure", enclosure)
             .put("birthdate", birthdate)
             .put("picName", picName);
         return builder.toString();

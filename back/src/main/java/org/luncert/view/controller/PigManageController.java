@@ -24,8 +24,8 @@ public class PigManageController {
 
     @AuthRequired(accessLevel = Role.ADMIN)
     @PostMapping("addPig")
-    public String addPig(String userId, String name, int strain, boolean beMale, String status, String birthdate, @RequestParam(name = "image") MultipartFile file) {
-        return pigService.addPig(userId, name, strain, beMale, Pig.statusValueOf(status), birthdate, file).toString();
+    public String addPig(String userId, String name, int strain, boolean beMale, String enclosure, String status, String birthdate, @RequestParam(name = "image") MultipartFile file) {
+        return pigService.addPig(userId, name, strain, beMale, enclosure, Pig.statusValueOf(status), birthdate, file).toString();
     }
 
     @AuthRequired(accessLevel = Role.ADMIN)

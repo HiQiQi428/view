@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface PigService {
 
+    JsonResult queryEnclosure(WxUser wxUser);
+
     JsonResult addStrain(String value);
 
     /**
@@ -31,18 +33,18 @@ public interface PigService {
      * @param birthdate 出生日期
      * @param file 照片
      */
-    JsonResult addPig(WxUser wxUser, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file);
+    JsonResult addPig(WxUser wxUser, String name, int strain, boolean beMale, String enclosure, Status status, String birthdate, MultipartFile file);
 
     /**
      * 管理员接口
      */
-    JsonResult addPig(String userId, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file);
+    JsonResult addPig(String userId, String name, int strain, boolean beMale, String enclosure, Status status, String birthdate, MultipartFile file);
     
     /**
      * 检查 strain 是否合法
      * 获取 pig 并更新属性
      */
-    JsonResult updatePig(long pigId, String name, int strain, boolean beMale, Status status, String birthdate);
+    JsonResult updatePig(long pigId, String name, int strain, boolean beMale, String enclosure, Status status, String birthdate);
 
     /**
      * 通过 WxUserRepository 查询 wxUser 登记的所有猪

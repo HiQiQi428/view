@@ -22,6 +22,12 @@ public class PigController {
     PigService pigService;
 
     @AuthRequired
+    @GetMapping("queryEnclosure")
+    public String queryEnclosure(@AuthUser WxUser wxUser) {
+        return pigService.queryEnclosure(wxUser).toString();
+    }
+
+    @AuthRequired
     @GetMapping("addStrain")
     public String addStrain(String value) {
         return pigService.addStrain(value).toString();
@@ -41,14 +47,14 @@ public class PigController {
 
     @AuthRequired
     @PostMapping("addPig")
-    public String addPig(@AuthUser WxUser wxUser, String name, int strain, boolean beMale, String status, String birthdate, @RequestParam(name = "image") MultipartFile file) {
-        return pigService.addPig(wxUser, name,strain, beMale, Pig.statusValueOf(status), birthdate, file).toString();
+    public String addPig(@AuthUser WxUser wxUser, String name, int strain, boolean beMale, String enclosure, String status, String birthdate, @RequestParam(name = "image") MultipartFile file) {
+        return pigService.addPig(wxUser, name,strain, beMale, enclosure, Pig.statusValueOf(status), birthdate, file).toString();
     }
 
     @AuthRequired
     @PostMapping("updatePig")
-    public String updatePig(Long pigId, String name, int strain, boolean beMale, String status, String birthdate) {
-        return pigService.updatePig(pigId, name, strain, beMale, Pig.statusValueOf(status), birthdate).toString();
+    public String updatePig(Long pigId, String name, int strain, boolean beMale, String enclosure, String status, String birthdate) {
+        return pigService.updatePig(pigId, name, strain, beMale, enclosure, Pig.statusValueOf(status), birthdate).toString();
     }
 
     @AuthRequired

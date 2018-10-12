@@ -9,8 +9,10 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 
 import org.luncert.simpleutils.JsonResult;
+import org.luncert.view.datasource.mysql.EnclosureMapper;
 import org.luncert.view.datasource.mysql.RecordMapper;
 import org.luncert.view.datasource.mysql.StrainMapper;
+import org.luncert.view.datasource.mysql.entity.Enclosure;
 import org.luncert.view.datasource.mysql.entity.Strain;
 import org.luncert.view.datasource.neo4j.PigRepository;
 import org.luncert.view.datasource.neo4j.WxUserRepository;
@@ -32,6 +34,9 @@ public class PigServiceImpl implements PigService {
 
     @Autowired
     RecordMapper recordMapper;
+
+    @Autowired
+    EnclosureMapper enclosureMapper;
 
     @Autowired
     ImageService imageService;
@@ -63,6 +68,11 @@ public class PigServiceImpl implements PigService {
     }
 
     @Override
+    public JsonResult queryEnclosure(WxUser wxUser) {
+        return new JsonResult(StatusCode.OK, null, enclosureMapper.query(wxUser.getUserId()));
+    }
+
+    @Override
     public JsonResult addStrain(String value) {
         try {
             strainMapper.addStrain(value); // value 字段有UNIQUE约束,添加重复的值会抛出异常
@@ -88,7 +98,7 @@ public class PigServiceImpl implements PigService {
     public JsonResult getStrainMap() { return new JsonResult(StatusCode.OK, null, strains); }
 
     @Override
-    public JsonResult addPig(WxUser wxUser, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file) {
+    public JsonResult addPig(WxUser wxUser, String name, int strain, boolean beMale, String enclosure, Status status, String birthdate, MultipartFile file) {
         if (!isValidStrainIdentifier(strain))
             return new JsonResult(StatusCode.INVALID_STRAIN_IDENTIFIER);
 
@@ -99,6 +109,13 @@ public class PigServiceImpl implements PigService {
         catch (Exception e) {
             return new JsonResult(StatusCode.EXCEPTION_OCCUR, "failed to save image", e);
         }
+
+        try {
+            Enclosure e = new Enclosure();
+            e.setUserId(wxUser.getUserId());
+            e.setValue(enclosure);
+            enclosureMapper.add(e);
+        } catch (Exception ex) {}
 
         Pig pig = Pig.builder()
             .name(name)
@@ -115,16 +132,16 @@ public class PigServiceImpl implements PigService {
     }
 
     @Override
-    public JsonResult addPig(String userId, String name, int strain, boolean beMale, Status status, String birthdate, MultipartFile file) {
+    public JsonResult addPig(String userId, String name, int strain, boolean beMale, String enclosure, Status status, String birthdate, MultipartFile file) {
         WxUser wxUser = wxUserRepos.findByUserId(userId);
         if (wxUser != null)
-            return addPig(wxUser, name, strain, beMale, status, birthdate, file);
+            return addPig(wxUser, name, strain, beMale, enclosure, status, birthdate, file);
         else
             return new JsonResult(StatusCode.INVALID_USERID);
     }
     
     @Override
-    public JsonResult updatePig(long pigId, String name, int strain, boolean beMale, Status status, String birthdate) {
+    public JsonResult updatePig(long pigId, String name, int strain, boolean beMale, String enclosure, Status status, String birthdate) {
         if (!isValidStrainIdentifier(strain))
             return new JsonResult(StatusCode.INVALID_STRAIN_IDENTIFIER);
 
@@ -134,6 +151,7 @@ public class PigServiceImpl implements PigService {
             pig.setName(name);
             pig.setStrain(strain);
             pig.setBeMale(beMale);
+            pig.setEnclosure(enclosure);
             pig.setStatus(status);
             pig.setBirthdate(birthdate);
             pigRepos.save(pig);

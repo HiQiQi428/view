@@ -123,6 +123,7 @@ public class PigServiceImpl implements PigService {
             .beMale(beMale)
             .status(status)
             .birthdate(birthdate)
+            .enclosure(enclosure)
             .picName(picName)
             .build();
         pigRepos.save(pig);
